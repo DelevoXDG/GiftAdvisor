@@ -1,0 +1,41 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container-fluid min-vh-100 d-flex align-items-center">
+    <div class="row w-100 mx-auto" style="max-width: 1400px;">
+        <div class="col-md-6 pe-md-5">
+            <div class="mb-4">
+                <h1 class="display-4 fw-bold" style="color: var(--primary-color);">
+                    🎁 GiftAdvisor
+                </h1>
+                <h2 class="h3 mb-4" style="color: var(--text-color);">
+                    Never struggle with finding the perfect gift again
+                </h2>
+                <p class="lead text-muted">
+                    Your personal AI-powered gift recommendations that helps you discover, track, and manage thoughtful presents for your loved ones.
+                </p>
+            </div>
+        </div>
+
+        <div class="col-md-1 d-none d-md-flex align-items-center justify-content-center">
+            <div class="vr h-75"></div>
+        </div>
+
+        <div class="col-md-5">
+            <div class="card shadow-custom border-0 p-4">
+                <div class="card-body">
+                    <h2 class="card-title mb-4 text-center">Welcome Back</h2>
+                    <div class="d-grid gap-3">
+                        <button class="btn btn-primary btn-lg">
+                            Sign In
+                        </button>
+                        <button class="btn btn-outline-primary btn-lg">
+                            Create Account
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 
