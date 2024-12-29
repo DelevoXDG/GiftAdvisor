@@ -27,10 +27,34 @@
             flex-direction: column;
         }
         
+        .navbar {
+            background-color: white;
+            border-bottom: 1px solid rgba(0,0,0,.1);
+            padding: 0.5rem 1rem;
+        }
+        
         .navbar-brand {
             color: var(--primary-color) !important;
             font-weight: 600;
             font-size: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .navbar-brand:hover {
+            color: #ff5252 !important;
+        }
+        
+        .nav-link {
+            color: var(--text-color);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .nav-link:hover {
+            color: var(--primary-color);
         }
         
         .btn-primary {
@@ -80,6 +104,26 @@
     </style>
 </head>
 <body>
+    <nav class="navbar navbar-expand-lg shadow-sm">
+        <div class="container">
+            <a class="navbar-brand" href="{% url 'index' %}">
+                🎁 GiftAdvisor
+            </a>
+            <div class="ms-auto d-flex align-items-center gap-3">
+                <a href="#" class="nav-link">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-person-circle" viewBox="0 0 16 16">
+                        <path d="M11 6a3 3 0 1 1-6 0 3 3 0 0 1 6 0"/>
+                        <path fill-rule="evenodd" d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8m8-7a7 7 0 0 0-5.468 11.37C3.242 11.226 4.805 10 8 10s4.757 1.225 5.468 2.37A7 7 0 0 0 8 1"/>
+                    </svg>
+                    Account
+                </a>
+                <button class="btn btn-outline-primary btn-sm">
+                    Logout
+                </button>
+            </div>
+        </div>
+    </nav>
+
     <main>
         {% block content %}
         {% endblock %}
