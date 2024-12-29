@@ -94,10 +94,12 @@ SOCIALACCOUNT_PROVIDERS = {
         'SCOPE': [
             'profile',
             'email',
+            'openid',
         ],
         'AUTH_PARAMS': {
             'access_type': 'online',
-        }
+        },
+        'FETCH_USERINFO': True,
     }
 }
 
