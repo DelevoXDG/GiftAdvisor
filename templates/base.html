@@ -25,12 +25,16 @@
             min-height: 100vh;
             display: flex;
             flex-direction: column;
+            position: relative;
         }
         
         .navbar {
-            background-color: white;
+            background-color: rgba(255, 255, 255, 0.95);
             border-bottom: 1px solid rgba(0,0,0,.1);
             padding: 0.5rem 1rem;
+            backdrop-filter: blur(10px);
+            position: relative;
+            z-index: 1000;
         }
         
         .navbar-brand {
@@ -86,10 +90,13 @@
         }
 
         footer {
-            background-color: white;
+            background-color: rgba(255, 255, 255, 0.95);
             border-top: 1px solid rgba(0,0,0,.1);
             padding: 1rem 0;
             font-size: 0.9rem;
+            backdrop-filter: blur(10px);
+            position: relative;
+            z-index: 1000;
         }
 
         footer a {
@@ -102,6 +109,7 @@
             text-decoration: underline;
         }
     </style>
+    {% block extra_css %}{% endblock %}
 </head>
 <body>
     <nav class="navbar navbar-expand-lg shadow-sm">
