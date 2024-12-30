@@ -28,6 +28,7 @@
             display: flex;
             flex-direction: column;
             position: relative;
+            min-width: 320px;
         }
 
         .navbar {
@@ -125,6 +126,11 @@
             box-shadow: 0 4px 12px rgba(0,0,0,0.1) !important;
         }
 
+        /* Badge styles */
+        .badge.bg-primary {
+            background-color: var(--primary-color) !important;
+        }
+
         /* Remove hover effects from badges inside clickable items */
         .clickable .badge {
             pointer-events: none;
@@ -141,7 +147,20 @@
             border-radius: 0.75rem;
             box-shadow: 0 2px 4px rgba(0,0,0,0.05);
             min-height: calc(100vh - 56px - 2rem);
+            max-height: calc(100vh - 56px - 2rem);
+            overflow-y: auto;
             z-index: 900;
+        }
+
+        /* Hide scrollbar for Chrome, Safari and Opera */
+        .sidebar::-webkit-scrollbar {
+            display: none;
+        }
+
+        /* Hide scrollbar for IE, Edge and Firefox */
+        .sidebar {
+            -ms-overflow-style: none;  /* IE and Edge */
+            scrollbar-width: none;  /* Firefox */
         }
 
         .sidebar-link {
@@ -178,21 +197,24 @@
             }
         }
 
-        @media (max-width: 1200px) {
+        @media (max-width: 992px) {
             .sidebar {
-                transform: translateX(calc(-50% - 240px));
+                left: 0;
+                width: 240px;
             }
             .main-content {
-                max-width: 960px;
+                margin-left: 240px;
+                width: calc(100% - 240px);
             }
         }
 
-        @media (max-width: 992px) {
+        @media (max-width: 768px) {
             .sidebar {
-                transform: translateX(calc(-50% - 180px));
+                width: 200px;
             }
             .main-content {
-                max-width: 720px;
+                margin-left: 200px;
+                width: calc(100% - 200px);
             }
         }
 
@@ -245,6 +267,11 @@
             border-radius: 0.75rem;
             padding: 1.5rem;
             box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+
+        /* Ensure navbar stays visible */
+        .navbar .container {
+            min-width: 320px;
         }
     </style>
     {% block extra_css %}{% endblock %}
