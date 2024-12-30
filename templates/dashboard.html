@@ -98,18 +98,16 @@
                     <div class="p-3">
                         <h5 class="mb-2">{{ gift.title }}</h5>
                         <p class="text-muted mb-2">${{ gift.price }}</p>
-                        <div class="d-flex justify-content-between align-items-center mb-2">
-                            <div>
-                                {% for tag in gift.tags.all|slice:":3" %}
-                                    <span class="badge bg-primary me-1">{{ tag.name }}</span>
-                                {% endfor %}
-                                {% if gift.tags.count > 3 %}
-                                    <span class="badge bg-secondary">+{{ gift.tags.count|add:"-3" }}</span>
-                                {% endif %}
-                            </div>
-                            <span class="badge bg-{% if gift.status == 'idea' %}warning{% else %}info{% endif %}">
+                        <div class="d-flex flex-wrap gap-1">
+                            <span class="badge bg-{% if gift.status == 'idea' %}warning{% else %}info{% endif %} me-1">
                                 {{ gift.get_status_display }}
                             </span>
+                            {% for tag in gift.tags.all|slice:":3" %}
+                                <span class="badge bg-primary">{{ tag.name }}</span>
+                            {% endfor %}
+                            {% if gift.tags.count > 3 %}
+                                <span class="badge bg-secondary">+{{ gift.tags.count|add:"-3" }}</span>
+                            {% endif %}
                         </div>
                     </div>
                 </div>
