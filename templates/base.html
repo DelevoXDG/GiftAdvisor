@@ -13,11 +13,14 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.2/font/bootstrap-icons.min.css">
     <style>
         :root {
-            --primary-color: #FF6B6B;
-            --secondary-color: #4ECDC4;
-            --accent-color: #45B7D1;
-            --background-color: #f8f9fa;
-            --text-color: #2C3E50;
+            --primary-color: #FF4757;
+            --secondary-color: #2ED573;
+            --accent-color: #1E90FF;
+            --background-color: #F1F2F6;
+            --text-color: #2F3542;
+            --card-background: #FFFFFF;
+            --border-color: #E4E7EB;
+            --hover-color: #FFE9EB;
         }
 
         body {
@@ -32,7 +35,8 @@
         }
 
         .navbar {
-            background-color: rgba(255, 255, 255, 0.95);
+            background-color: var(--card-background);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.08);
             border-bottom: 1px solid rgba(0,0,0,.1);
             padding: 0.5rem 1rem;
             backdrop-filter: blur(10px);
@@ -69,20 +73,24 @@
         .btn-primary {
             background-color: var(--primary-color);
             border-color: var(--primary-color);
+            font-weight: 500;
+            padding: 0.5rem 1rem;
         }
 
         .btn-primary:hover {
-            background-color: #ff5252;
-            border-color: #ff5252;
+            background-color: #FF3344;
+            border-color: #FF3344;
         }
 
         .btn-outline-primary {
             color: var(--primary-color);
             border-color: var(--primary-color);
+            font-weight: 500;
         }
 
         .btn-outline-primary:hover {
-            background-color: var(--primary-color);
+            background-color: var(--hover-color);
+            color: var(--primary-color);
             border-color: var(--primary-color);
         }
         
@@ -127,6 +135,11 @@
         }
 
         /* Badge styles */
+        .badge {
+            font-weight: 500;
+            padding: 0.5em 0.8em;
+        }
+
         .badge.bg-primary {
             background-color: var(--primary-color) !important;
         }
@@ -143,9 +156,9 @@
             top: calc(56px + 1rem);
             left: calc((100% - 1320px) / 2);
             padding: 1.5rem;
-            background: white;
+            background: var(--card-background);
             border-radius: 0.75rem;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
             min-height: calc(100vh - 56px - 2rem);
             max-height: calc(100vh - 56px - 2rem);
             overflow-y: auto;
@@ -172,11 +185,12 @@
             text-decoration: none;
             border-radius: 0.5rem;
             transition: all 0.2s;
+            font-weight: 500;
         }
 
         .sidebar-link:hover,
         .sidebar-link.active {
-            background: rgba(255, 107, 107, 0.1);
+            background: var(--hover-color);
             color: var(--primary-color);
         }
 
@@ -226,9 +240,16 @@
         }
 
         .gift-card {
-            background: white;
+            background: var(--card-background);
             border-radius: 0.75rem;
             overflow: hidden;
+            border: 1px solid var(--border-color);
+            transition: all 0.3s ease;
+        }
+
+        .gift-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.08);
         }
 
         /* Gift List */
@@ -244,11 +265,12 @@
 
         /* Image placeholders */
         .empty-img {
-            background: rgba(255, 107, 107, 0.1);
+            background: var(--hover-color);
             display: flex;
             align-items: center;
             justify-content: center;
             color: var(--primary-color);
+            border: 1px dashed var(--primary-color);
         }
 
         .gift-card .empty-img {
@@ -263,15 +285,27 @@
 
         /* Filters */
         .filters-section {
-            background: white;
-            border-radius: 0.75rem;
+            background: var(--card-background);
+            border: 1px solid var(--border-color);
+            border-radius: 1rem;
             padding: 1.5rem;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
         }
 
         /* Ensure navbar stays visible */
         .navbar .container {
             min-width: 320px;
+        }
+
+        /* Form controls */
+        .form-select, .form-control {
+            border-color: var(--border-color);
+            padding: 0.625rem 1rem;
+        }
+
+        .form-select:focus, .form-control:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 0.2rem rgba(255, 71, 87, 0.25);
         }
     </style>
     {% block extra_css %}{% endblock %}

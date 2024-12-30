@@ -23,18 +23,19 @@
         <div class="container-fluid py-4">
             <div class="filters-section">
                 <div class="d-flex justify-content-between align-items-center mb-4">
-                    <h2 class="mb-0">Gift Ideas</h2>
+                    <h2 class="fw-bold">Gift Ideas</h2>
                     <div class="d-flex gap-3">
                         <div class="btn-group" role="group">
-                            <button type="button" class="btn btn-outline-primary active" id="gridViewBtn">
+                            <button type="button" class="btn btn-outline-primary active px-3" id="gridViewBtn">
                                 <i class="bi bi-grid"></i>
                             </button>
-                            <button type="button" class="btn btn-outline-primary" id="listViewBtn">
+                            <button type="button" class="btn btn-outline-primary px-3" id="listViewBtn">
                                 <i class="bi bi-list-ul"></i>
                             </button>
                         </div>
-                        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addGiftModal">
-                            <i class="bi bi-plus-lg"></i> Add Gift Idea
+                        <button class="btn btn-primary d-flex align-items-center gap-2" data-bs-toggle="modal" data-bs-target="#addGiftModal">
+                            <i class="bi bi-plus-lg"></i>
+                            <span>Add Gift Idea</span>
                         </button>
                     </div>
                 </div>
@@ -90,15 +91,15 @@
                 <!-- Grid View -->
                 <div class="gift-grid">
                     {% for gift in gifts %}
-                    <div class="gift-card shadow-sm clickable">
+                    <div class="gift-card">
                         <div class="empty-img">
-                            <i class="bi bi-image" style="font-size: 2rem;"></i>
+                            <i class="bi bi-image-fill" style="font-size: 2rem; opacity: 0.5;"></i>
                         </div>
-                        <div class="p-3">
-                            <h5 class="mb-2">{{ gift.title }}</h5>
-                            <p class="text-muted mb-2">${{ gift.price }}</p>
-                            <div class="d-flex flex-wrap gap-1">
-                                <span class="badge bg-{% if gift.status == 'idea' %}warning{% else %}info{% endif %} me-1">
+                        <div class="p-4">
+                            <h5 class="fw-bold mb-2">{{ gift.title }}</h5>
+                            <p class="text-primary fw-bold mb-3">${{ gift.price }}</p>
+                            <div class="d-flex flex-wrap gap-2">
+                                <span class="badge {% if gift.status == 'idea' %}bg-warning{% else %}bg-info{% endif %}">
                                     {{ gift.get_status_display }}
                                 </span>
                                 {% for tag in gift.tags.all|slice:":3" %}
@@ -113,9 +114,12 @@
                     {% empty %}
                     <div class="col-12 text-center py-5">
                         <div class="text-muted">
-                            <i class="bi bi-gift mb-3" style="font-size: 3rem;"></i>
-                            <h4>No gift ideas found</h4>
-                            <p>Try adjusting your filters or add a new gift idea.</p>
+                            <i class="bi bi-gift-fill mb-4" style="font-size: 3.5rem; opacity: 0.5;"></i>
+                            <h4 class="fw-bold">No gift ideas found</h4>
+                            <p class="text-muted">Try adjusting your filters or add a new gift idea.</p>
+                            <button class="btn btn-primary mt-3" data-bs-toggle="modal" data-bs-target="#addGiftModal">
+                                Add Your First Gift Idea
+                            </button>
                         </div>
                     </div>
                     {% endfor %}
