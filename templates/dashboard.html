@@ -95,77 +95,68 @@
                     </div>
                 </form>
 
-                <!-- Grid View -->
-                <div class="gift-grid">
-                    {% for gift in gifts %}
-                    <div class="gift-card">
-                        <div class="empty-img">
-                            <i class="bi bi-image-fill" style="font-size: 2rem; opacity: 0.5;"></i>
-                        </div>
-                        <div class="p-4">
-                            <h5 class="fw-bold mb-2">{{ gift.title }}</h5>
-                            <p class="text-primary fw-bold mb-3">${{ gift.price }}</p>
-                            <div class="d-flex flex-wrap gap-2">
-                                <span class="badge {% if gift.status == 'idea' %}bg-warning{% else %}bg-info{% endif %}">
-                                    {{ gift.get_status_display }}
-                                </span>
-                                {% for tag in gift.tags.all|slice:":3" %}
-                                    <span class="badge bg-primary">{{ tag.name }}</span>
-                                {% endfor %}
-                                {% if gift.tags.count > 3 %}
-                                    <span class="badge bg-secondary">+{{ gift.tags.count|add:"-3" }}</span>
-                                {% endif %}
+                {% if gifts %}
+                    <!-- Grid View -->
+                    <div class="gift-grid">
+                        {% for gift in gifts %}
+                        <div class="gift-card">
+                            <div class="empty-img">
+                                <i class="bi bi-image-fill" style="font-size: 2rem; opacity: 0.5;"></i>
+                            </div>
+                            <div class="p-4">
+                                <h5 class="fw-bold mb-2">{{ gift.title }}</h5>
+                                <p class="text-primary fw-bold mb-3">${{ gift.price }}</p>
+                                <div class="d-flex flex-wrap gap-2">
+                                    <span class="badge {% if gift.status == 'idea' %}bg-warning{% else %}bg-info{% endif %}">
+                                        {{ gift.get_status_display }}
+                                    </span>
+                                    {% for tag in gift.tags.all|slice:":3" %}
+                                        <span class="badge bg-primary">{{ tag.name }}</span>
+                                    {% endfor %}
+                                    {% if gift.tags.count > 3 %}
+                                        <span class="badge bg-secondary">+{{ gift.tags.count|add:"-3" }}</span>
+                                    {% endif %}
+                                </div>
                             </div>
                         </div>
+                        {% endfor %}
                     </div>
-                    {% empty %}
-                    <div class="col-12 text-center py-5">
-                        <div class="text-muted">
+
+                    <!-- List View -->
+                    <div class="gift-list d-none">
+                        {% for gift in gifts %}
+                        <div class="gift-item shadow-sm clickable">
+                            <div class="empty-img">
+                                <i class="bi bi-image"></i>
+                            </div>
+                            <div class="flex-grow-1">
+                                <div class="d-flex justify-content-between align-items-start mb-2">
+                                    <div>
+                                        <h5 class="mb-1">{{ gift.title }}</h5>
+                                        <p class="text-muted mb-2">${{ gift.price }}</p>
+                                    </div>
+                                    <span class="badge bg-{% if gift.status == 'idea' %}warning{% else %}info{% endif %}">
+                                        {{ gift.get_status_display }}
+                                    </span>
+                                </div>
+                                <div>
+                                    {% for tag in gift.tags.all %}
+                                        <span class="badge bg-primary me-1">{{ tag.name }}</span>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="text-center py-5">
+                        <div class="text-center">
                             <i class="bi bi-gift-fill mb-4" style="font-size: 3.5rem; opacity: 0.5;"></i>
                             <h4 class="fw-bold">No gift ideas found</h4>
                             <p class="text-muted">Try adjusting your filters or add a new gift idea.</p>
-                            <button class="btn btn-primary mt-3" data-bs-toggle="modal" data-bs-target="#addGiftModal">
-                                Add Your First Gift Idea
-                            </button>
                         </div>
                     </div>
-                    {% endfor %}
-                </div>
-
-                <!-- List View -->
-                <div class="gift-list d-none">
-                    {% for gift in gifts %}
-                    <div class="gift-item shadow-sm clickable">
-                        <div class="empty-img">
-                            <i class="bi bi-image"></i>
-                        </div>
-                        <div class="flex-grow-1">
-                            <div class="d-flex justify-content-between align-items-start mb-2">
-                                <div>
-                                    <h5 class="mb-1">{{ gift.title }}</h5>
-                                    <p class="text-muted mb-2">${{ gift.price }}</p>
-                                </div>
-                                <span class="badge bg-{% if gift.status == 'idea' %}warning{% else %}info{% endif %}">
-                                    {{ gift.get_status_display }}
-                                </span>
-                            </div>
-                            <div>
-                                {% for tag in gift.tags.all %}
-                                    <span class="badge bg-primary me-1">{{ tag.name }}</span>
-                                {% endfor %}
-                            </div>
-                        </div>
-                    </div>
-                    {% empty %}
-                    <div class="text-center py-5">
-                        <div class="text-muted">
-                            <i class="bi bi-gift mb-3" style="font-size: 3rem;"></i>
-                            <h4>No gift ideas found</h4>
-                            <p>Try adjusting your filters or add a new gift idea.</p>
-                        </div>
-                    </div>
-                    {% endfor %}
-                </div>
+                {% endif %}
             </div>
         </div>
     </div>
@@ -259,3 +250,4 @@ document.addEventListener('DOMContentLoaded', function() {
 </script>
 {% endblock %}
 {% endblock %}
+
