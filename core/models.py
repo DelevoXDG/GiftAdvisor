@@ -43,9 +43,8 @@ class Recipient(models.Model):
 class GiftIdea(models.Model):
     """Model for gift ideas."""
     STATUS_CHOICES = [
-        ('pending', 'Pending'),
-        ('purchased', 'Purchased'),
-        ('given', 'Given'),
+        ('idea', 'Idea'),
+        ('gifted', 'Gifted'),
     ]
     
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
@@ -53,7 +52,7 @@ class GiftIdea(models.Model):
     description = models.TextField(blank=True)
     price = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
     url = models.URLField(blank=True)
-    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='idea')
     recipients = models.ManyToManyField(Recipient, related_name='gift_ideas')
     occasions = models.ManyToManyField(Occasion, related_name='gift_ideas', blank=True)
     tags = models.ManyToManyField(Tag, related_name='gift_ideas')

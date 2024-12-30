@@ -1,5 +1,77 @@
 from django.shortcuts import render
 from django.views.generic import TemplateView
+from django.contrib.auth.mixins import LoginRequiredMixin
+from .models import GiftIdea, Tag, Recipient
+from django.db.models import Min, Max
+from django.contrib.auth import get_user_model
+
+User = get_user_model()
 
 class IndexView(TemplateView):
-    template_name = 'index.html'
+    def get_template_names(self):
+        if self.request.user.is_authenticated:
+            return ['dashboard.html']
+        return ['index.html']
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        
+        if self.request.user.is_authenticated:
+            # Get test user if current user has no gifts
+            user = self.request.user
+            gifts = GiftIdea.objects.filter(user=user)
+            
+            if not gifts.exists():
+                # Try to find the test user's gifts
+                test_user = User.objects.filter(email='test@example.com').first()
+                if test_user:
+                    gifts = GiftIdea.objects.filter(user=test_user)
+            
+            # Apply filters
+            price_range = self.request.GET.get('price_range')
+            recipient_filter = self.request.GET.get('recipient')
+            tag_filter = self.request.GET.get('tag')
+            status_filter = self.request.GET.get('status')
+            
+            if price_range:
+                ranges = {
+                    'under_25': (0, 25),
+                    '25_50': (25, 50),
+                    '50_100': (50, 100),
+                    'over_100': (100, 1000000)
+                }
+                if price_range in ranges:
+                    min_price, max_price = ranges[price_range]
+                    gifts = gifts.filter(price__gte=min_price, price__lt=max_price)
+            
+            if recipient_filter:
+                gifts = gifts.filter(recipients__relationship=recipient_filter)
+            
+            if tag_filter:
+                gifts = gifts.filter(tags__name=tag_filter)
+                
+            if status_filter:
+                gifts = gifts.filter(status=status_filter)
+            
+            # Get filter options
+            price_stats = gifts.aggregate(
+                min_price=Min('price'),
+                max_price=Max('price')
+            )
+            
+            context.update({
+                'gifts': gifts.distinct(),
+                'tags': Tag.objects.filter(gift_ideas__user=user).distinct(),
+                'recipients': Recipient.objects.filter(user=user),
+                'price_stats': price_stats,
+                'relationship_choices': Recipient.RELATIONSHIP_CHOICES,
+                'status_choices': GiftIdea.STATUS_CHOICES,
+                'current_filters': {
+                    'price_range': price_range,
+                    'recipient': recipient_filter,
+                    'tag': tag_filter,
+                    'status': status_filter
+                }
+            })
+            
+        return context
