@@ -21,25 +21,25 @@
     <!-- Main Content -->
     <div class="main-content">
         <div class="container-fluid py-4">
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <h2 class="mb-0">Gift Ideas</h2>
-                <div class="d-flex gap-3">
-                    <div class="btn-group" role="group">
-                        <button type="button" class="btn btn-outline-primary active" id="gridViewBtn">
-                            <i class="bi bi-grid"></i>
-                        </button>
-                        <button type="button" class="btn btn-outline-primary" id="listViewBtn">
-                            <i class="bi bi-list-ul"></i>
+            <div class="filters-section">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h2 class="mb-0">Gift Ideas</h2>
+                    <div class="d-flex gap-3">
+                        <div class="btn-group" role="group">
+                            <button type="button" class="btn btn-outline-primary active" id="gridViewBtn">
+                                <i class="bi bi-grid"></i>
+                            </button>
+                            <button type="button" class="btn btn-outline-primary" id="listViewBtn">
+                                <i class="bi bi-list-ul"></i>
+                            </button>
+                        </div>
+                        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addGiftModal">
+                            <i class="bi bi-plus-lg"></i> Add Gift Idea
                         </button>
                     </div>
-                    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addGiftModal">
-                        <i class="bi bi-plus-lg"></i> Add Gift Idea
-                    </button>
                 </div>
-            </div>
 
-            <form id="filterForm" class="mb-4">
-                <div class="filters-section">
+                <form id="filterForm" class="mb-4">
                     <div class="row g-3">
                         <div class="col-md-3">
                             <label class="form-label">Price Range</label>
@@ -85,76 +85,76 @@
                             </select>
                         </div>
                     </div>
-                </div>
-            </form>
+                </form>
 
-            <!-- Grid View -->
-            <div class="gift-grid">
-                {% for gift in gifts %}
-                <div class="gift-card shadow-sm clickable">
-                    <div class="empty-img">
-                        <i class="bi bi-image" style="font-size: 2rem;"></i>
-                    </div>
-                    <div class="p-3">
-                        <h5 class="mb-2">{{ gift.title }}</h5>
-                        <p class="text-muted mb-2">${{ gift.price }}</p>
-                        <div class="d-flex flex-wrap gap-1">
-                            <span class="badge bg-{% if gift.status == 'idea' %}warning{% else %}info{% endif %} me-1">
-                                {{ gift.get_status_display }}
-                            </span>
-                            {% for tag in gift.tags.all|slice:":3" %}
-                                <span class="badge bg-primary">{{ tag.name }}</span>
-                            {% endfor %}
-                            {% if gift.tags.count > 3 %}
-                                <span class="badge bg-secondary">+{{ gift.tags.count|add:"-3" }}</span>
-                            {% endif %}
+                <!-- Grid View -->
+                <div class="gift-grid">
+                    {% for gift in gifts %}
+                    <div class="gift-card shadow-sm clickable">
+                        <div class="empty-img">
+                            <i class="bi bi-image" style="font-size: 2rem;"></i>
                         </div>
-                    </div>
-                </div>
-                {% empty %}
-                <div class="col-12 text-center py-5">
-                    <div class="text-muted">
-                        <i class="bi bi-gift mb-3" style="font-size: 3rem;"></i>
-                        <h4>No gift ideas found</h4>
-                        <p>Try adjusting your filters or add a new gift idea.</p>
-                    </div>
-                </div>
-                {% endfor %}
-            </div>
-
-            <!-- List View -->
-            <div class="gift-list d-none">
-                {% for gift in gifts %}
-                <div class="gift-item shadow-sm clickable">
-                    <div class="empty-img">
-                        <i class="bi bi-image"></i>
-                    </div>
-                    <div class="flex-grow-1">
-                        <div class="d-flex justify-content-between align-items-start mb-2">
-                            <div>
-                                <h5 class="mb-1">{{ gift.title }}</h5>
-                                <p class="text-muted mb-2">${{ gift.price }}</p>
+                        <div class="p-3">
+                            <h5 class="mb-2">{{ gift.title }}</h5>
+                            <p class="text-muted mb-2">${{ gift.price }}</p>
+                            <div class="d-flex flex-wrap gap-1">
+                                <span class="badge bg-{% if gift.status == 'idea' %}warning{% else %}info{% endif %} me-1">
+                                    {{ gift.get_status_display }}
+                                </span>
+                                {% for tag in gift.tags.all|slice:":3" %}
+                                    <span class="badge bg-primary">{{ tag.name }}</span>
+                                {% endfor %}
+                                {% if gift.tags.count > 3 %}
+                                    <span class="badge bg-secondary">+{{ gift.tags.count|add:"-3" }}</span>
+                                {% endif %}
                             </div>
-                            <span class="badge bg-{% if gift.status == 'idea' %}warning{% else %}info{% endif %}">
-                                {{ gift.get_status_display }}
-                            </span>
-                        </div>
-                        <div>
-                            {% for tag in gift.tags.all %}
-                                <span class="badge bg-primary me-1">{{ tag.name }}</span>
-                            {% endfor %}
                         </div>
                     </div>
-                </div>
-                {% empty %}
-                <div class="text-center py-5">
-                    <div class="text-muted">
-                        <i class="bi bi-gift mb-3" style="font-size: 3rem;"></i>
-                        <h4>No gift ideas found</h4>
-                        <p>Try adjusting your filters or add a new gift idea.</p>
+                    {% empty %}
+                    <div class="col-12 text-center py-5">
+                        <div class="text-muted">
+                            <i class="bi bi-gift mb-3" style="font-size: 3rem;"></i>
+                            <h4>No gift ideas found</h4>
+                            <p>Try adjusting your filters or add a new gift idea.</p>
+                        </div>
                     </div>
+                    {% endfor %}
                 </div>
-                {% endfor %}
+
+                <!-- List View -->
+                <div class="gift-list d-none">
+                    {% for gift in gifts %}
+                    <div class="gift-item shadow-sm clickable">
+                        <div class="empty-img">
+                            <i class="bi bi-image"></i>
+                        </div>
+                        <div class="flex-grow-1">
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <div>
+                                    <h5 class="mb-1">{{ gift.title }}</h5>
+                                    <p class="text-muted mb-2">${{ gift.price }}</p>
+                                </div>
+                                <span class="badge bg-{% if gift.status == 'idea' %}warning{% else %}info{% endif %}">
+                                    {{ gift.get_status_display }}
+                                </span>
+                            </div>
+                            <div>
+                                {% for tag in gift.tags.all %}
+                                    <span class="badge bg-primary me-1">{{ tag.name }}</span>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <div class="text-center py-5">
+                        <div class="text-muted">
+                            <i class="bi bi-gift mb-3" style="font-size: 3rem;"></i>
+                            <h4>No gift ideas found</h4>
+                            <p>Try adjusting your filters or add a new gift idea.</p>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
             </div>
         </div>
     </div>
