@@ -185,7 +185,7 @@
 </div>
 
 <!-- Add Gift Modal -->
-<div class="modal fade" id="addGiftModal" tabindex="-1">
+<div class="modal fade" id="addGiftModal" tabindex="-1" data-bs-backdrop="static">
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
@@ -230,7 +230,7 @@
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                <button type="submit" form="addGiftForm" class="btn btn-primary">Add Gift</button>
+                <button type="button" class="btn btn-primary" id="submitGiftBtn">Add Gift</button>
             </div>
         </div>
     </div>
@@ -243,9 +243,21 @@ document.addEventListener('DOMContentLoaded', function() {
     const addGiftForm = document.getElementById('addGiftForm');
     const addGiftModal = document.getElementById('addGiftModal');
     const bsModal = new bootstrap.Modal(addGiftModal);
+    let isSubmitting = false; // Add flag to prevent duplicate submissions
 
-    addGiftForm.addEventListener('submit', async function(e) {
-        e.preventDefault();
+    // Reset form when modal is closed
+    addGiftModal.addEventListener('hidden.bs.modal', function () {
+        addGiftForm.reset();
+        isSubmitting = false;
+    });
+
+    document.getElementById('submitGiftBtn').addEventListener('click', async function(e) {
+        if (isSubmitting) return;
+        if (!addGiftForm.checkValidity()) {
+            addGiftForm.reportValidity();
+            return;
+        }
+        isSubmitting = true;
         
         const formData = {
             title: addGiftForm.querySelector('[name="title"]').value,
@@ -274,10 +286,12 @@ document.addEventListener('DOMContentLoaded', function() {
                 window.location.reload();
             } else {
                 alert(data.error || 'Failed to add gift idea');
+                isSubmitting = false;
             }
         } catch (error) {
             console.error('Error:', error);
             alert('Failed to add gift idea');
+            isSubmitting = false;
         }
     });
 
@@ -285,9 +299,12 @@ document.addEventListener('DOMContentLoaded', function() {
     const quickAddForm = document.getElementById('quickAddForm');
     const quickAddInput = quickAddForm.querySelector('input[name="url"]');
     const quickAddButton = quickAddForm.querySelector('button[type="submit"]');
+    let isExtracting = false;
 
     quickAddForm.addEventListener('submit', async function(e) {
         e.preventDefault();
+        if (isExtracting) return;
+        isExtracting = true;
         
         // Disable form while processing
         quickAddInput.disabled = true;
@@ -308,16 +325,16 @@ document.addEventListener('DOMContentLoaded', function() {
             const data = await response.json();
             
             if (response.ok) {
+                // Reset the form first
+                addGiftForm.reset();
+                
                 // Pre-fill the modal with extracted data
-                const modal = new bootstrap.Modal(document.getElementById('addGiftModal'));
-                const form = document.getElementById('addGiftForm');
+                addGiftForm.querySelector('input[name="title"]').value = data.title || '';
+                addGiftForm.querySelector('textarea[name="description"]').value = data.description || '';
+                addGiftForm.querySelector('input[name="price"]').value = data.price || '';
+                addGiftForm.querySelector('input[name="url"]').value = data.url || '';
                 
-                form.querySelector('input[name="title"]').value = data.title || '';
-                form.querySelector('textarea[name="description"]').value = data.description || '';
-                form.querySelector('input[name="price"]').value = data.price || '';
-                form.querySelector('input[name="url"]').value = data.url || '';
-                
-                modal.show();
+                bsModal.show();
                 quickAddForm.reset();
             } else {
                 alert(data.error || 'Failed to extract metadata');
@@ -329,6 +346,7 @@ document.addEventListener('DOMContentLoaded', function() {
             // Re-enable form
             quickAddInput.disabled = false;
             quickAddButton.disabled = false;
+            isExtracting = false;
         }
     });
 
