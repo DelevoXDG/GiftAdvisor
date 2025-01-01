@@ -381,30 +381,6 @@ files = [
 django = ">=4.2"
 
 [[package]]
-name = "extruct"
-version = "0.16.0"
-description = "Extract embedded metadata from HTML markup"
-optional = false
-python-versions = "*"
-files = [
-    {file = "extruct-0.16.0-py2.py3-none-any.whl", hash = "sha256:2499ea9e7d22744745ca708acee9542a4aa231871620c4f65f869a1286e64aa8"},
-    {file = "extruct-0.16.0.tar.gz", hash = "sha256:d09cb3d86d149a276b277b3bd45b2b867ef3ec78bed9cd58ee0f2ae01ae670c4"},
-]
-
-[package.dependencies]
-html-text = ">=0.5.1"
-jstyleson = "*"
-lxml = "*"
-mf2py = "*"
-pyrdfa3 = "*"
-rdflib = {version = ">=6.0.0", markers = "python_version >= \"3.7\""}
-six = "*"
-w3lib = "*"
-
-[package.extras]
-cli = ["requests"]
-
-[[package]]
 name = "faker"
 version = "33.1.0"
 description = "Faker is a Python package that generates fake data for you."
@@ -420,42 +396,6 @@ python-dateutil = ">=2.4"
 typing-extensions = "*"
 
 [[package]]
-name = "html-text"
-version = "0.6.2"
-description = "Extract text from HTML"
-optional = false
-python-versions = "*"
-files = [
-    {file = "html_text-0.6.2-py2.py3-none-any.whl", hash = "sha256:d83d619ccd4b4d6172e21084d8a46e29e49ce87a08cc02161e7ca8c2918e7bca"},
-    {file = "html_text-0.6.2.tar.gz", hash = "sha256:81455b4de5430cf63ce7c45a870fb8629e79ca8518e240f172d62409c2f2ff72"},
-]
-
-[package.dependencies]
-lxml = "*"
-lxml-html-clean = "*"
-
-[[package]]
-name = "html5lib"
-version = "1.1"
-description = "HTML parser based on the WHATWG HTML specification"
-optional = false
-python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*"
-files = [
-    {file = "html5lib-1.1-py2.py3-none-any.whl", hash = "sha256:0d78f8fde1c230e99fe37986a60526d7049ed4bf8a9fadbad5f00e22e58e041d"},
-    {file = "html5lib-1.1.tar.gz", hash = "sha256:b2e5b40261e20f354d198eae92afc10d750afb487ed5e50f9c4eaf07c184146f"},
-]
-
-[package.dependencies]
-six = ">=1.9"
-webencodings = "*"
-
-[package.extras]
-all = ["chardet (>=2.2)", "genshi", "lxml"]
-chardet = ["chardet (>=2.2)"]
-genshi = ["genshi"]
-lxml = ["lxml"]
-
-[[package]]
 name = "idna"
 version = "3.10"
 description = "Internationalized Domain Names in Applications (IDNA)"
@@ -468,16 +408,6 @@ files = [
 
 [package.extras]
 all = ["flake8 (>=7.1.1)", "mypy (>=1.11.2)", "pytest (>=8.3.2)", "ruff (>=0.6.2)"]
-
-[[package]]
-name = "jstyleson"
-version = "0.0.2"
-description = "Library to parse JSON with js-style comments."
-optional = false
-python-versions = "*"
-files = [
-    {file = "jstyleson-0.0.2.tar.gz", hash = "sha256:680003f3b15a2959e4e6a351f3b858e3c07dd3e073a0d54954e34d8ea5e1308e"},
-]
 
 [[package]]
 name = "lxml"
@@ -632,36 +562,6 @@ html-clean = ["lxml-html-clean"]
 html5 = ["html5lib"]
 htmlsoup = ["BeautifulSoup4"]
 source = ["Cython (>=3.0.11)"]
-
-[[package]]
-name = "lxml-html-clean"
-version = "0.4.1"
-description = "HTML cleaner from lxml project"
-optional = false
-python-versions = "*"
-files = [
-    {file = "lxml_html_clean-0.4.1-py3-none-any.whl", hash = "sha256:b704f2757e61d793b1c08bf5ad69e4c0b68d6696f4c3c1429982caf90050bcaf"},
-    {file = "lxml_html_clean-0.4.1.tar.gz", hash = "sha256:40c838bbcf1fc72ba4ce811fbb3135913017b27820d7c16e8bc412ae1d8bc00b"},
-]
-
-[package.dependencies]
-lxml = "*"
-
-[[package]]
-name = "mf2py"
-version = "2.0.1"
-description = "Microformats parser"
-optional = false
-python-versions = ">=3.8"
-files = [
-    {file = "mf2py-2.0.1-py3-none-any.whl", hash = "sha256:092806e17f1a93db4aafa5e8d3c4124b5e42cd89027e2db48a5248ef4eabde03"},
-    {file = "mf2py-2.0.1.tar.gz", hash = "sha256:1380924633413b8d72e704b5c86b4382c4b1371699edecc907b01cd21138d7cd"},
-]
-
-[package.dependencies]
-beautifulsoup4 = ">=4.11.1,<5.0.0"
-html5lib = ">=1.1,<2.0"
-requests = ">=2.28.2,<3.0.0"
 
 [[package]]
 name = "pillow"
@@ -874,36 +774,6 @@ docs = ["sphinx", "sphinx-rtd-theme", "zope.interface"]
 tests = ["coverage[toml] (==5.0.4)", "pytest (>=6.0.0,<7.0.0)"]
 
 [[package]]
-name = "pyparsing"
-version = "3.2.1"
-description = "pyparsing module - Classes and methods to define and execute parsing grammars"
-optional = false
-python-versions = ">=3.9"
-files = [
-    {file = "pyparsing-3.2.1-py3-none-any.whl", hash = "sha256:506ff4f4386c4cec0590ec19e6302d3aedb992fdc02c761e90416f158dacf8e1"},
-    {file = "pyparsing-3.2.1.tar.gz", hash = "sha256:61980854fd66de3a90028d679a954d5f2623e83144b5afe5ee86f43d762e5f0a"},
-]
-
-[package.extras]
-diagrams = ["jinja2", "railroad-diagrams"]
-
-[[package]]
-name = "pyrdfa3"
-version = "3.6.4"
-description = "pyRdfa distiller/parser library"
-optional = false
-python-versions = ">=3.8"
-files = [
-    {file = "pyRdfa3-3.6.4-py3-none-any.whl", hash = "sha256:ed11affa5567ab7afdbc939a58f9286a274447f3ab2999c260c56b5c6e87fb2f"},
-    {file = "pyrdfa3-3.6.4.tar.gz", hash = "sha256:64712d1a4bf21829652b39715bada6e7c03bcf19cb49f962c190a38f46172243"},
-]
-
-[package.dependencies]
-html5lib = ">=1.1"
-rdflib = ">=7.0.0"
-requests = ">=2.32.3"
-
-[[package]]
 name = "python-dateutil"
 version = "2.9.0.post0"
 description = "Extensions to the standard Python datetime module"
@@ -930,27 +800,6 @@ files = [
 
 [package.extras]
 cli = ["click (>=5.0)"]
-
-[[package]]
-name = "rdflib"
-version = "7.1.1"
-description = "RDFLib is a Python library for working with RDF, a simple yet powerful language for representing information."
-optional = false
-python-versions = "<4.0.0,>=3.8.1"
-files = [
-    {file = "rdflib-7.1.1-py3-none-any.whl", hash = "sha256:e590fa9a2c34ba33a667818b5a84be3fb8a4d85868f8038f17912ec84f912a25"},
-    {file = "rdflib-7.1.1.tar.gz", hash = "sha256:164de86bd3564558802ca983d84f6616a4a1a420c7a17a8152f5016076b2913e"},
-]
-
-[package.dependencies]
-pyparsing = ">=2.1.0,<4"
-
-[package.extras]
-berkeleydb = ["berkeleydb (>=18.1.0,<19.0.0)"]
-html = ["html5rdf (>=1.2,<2)"]
-lxml = ["lxml (>=4.3,<6.0)"]
-networkx = ["networkx (>=2,<4)"]
-orjson = ["orjson (>=3.9.14,<4)"]
 
 [[package]]
 name = "requests"
@@ -1049,29 +898,7 @@ h2 = ["h2 (>=4,<5)"]
 socks = ["pysocks (>=1.5.6,!=1.5.7,<2.0)"]
 zstd = ["zstandard (>=0.18.0)"]
 
-[[package]]
-name = "w3lib"
-version = "2.2.1"
-description = "Library of web-related functions"
-optional = false
-python-versions = ">=3.8"
-files = [
-    {file = "w3lib-2.2.1-py3-none-any.whl", hash = "sha256:e56d81c6a6bf507d7039e0c95745ab80abd24b465eb0f248af81e3eaa46eb510"},
-    {file = "w3lib-2.2.1.tar.gz", hash = "sha256:756ff2d94c64e41c8d7c0c59fea12a5d0bc55e33a531c7988b4a163deb9b07dd"},
-]
-
-[[package]]
-name = "webencodings"
-version = "0.5.1"
-description = "Character encoding aliases for legacy web content"
-optional = false
-python-versions = "*"
-files = [
-    {file = "webencodings-0.5.1-py2.py3-none-any.whl", hash = "sha256:a0af1213f3c2226497a97e2b3aa01a7e4bee4f403f95be16fc9acd2947514a78"},
-    {file = "webencodings-0.5.1.tar.gz", hash = "sha256:b36a1c245f2d304965eb4e0a82848379241dc04b865afcc4aab16748587e1923"},
-]
-
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.12"
-content-hash = "d929afa89c848b670e5696de3f3646c2207ce4f6f4ad8bc8e2b88a7189d2ef54"
+content-hash = "f62f52903570d4977798068b39c91233c4fa25591cacbb7ed2e99c72f8f55bfb"

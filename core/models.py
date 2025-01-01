@@ -52,6 +52,7 @@ class GiftIdea(models.Model):
     description = models.TextField(blank=True)
     price = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
     url = models.URLField(blank=True)
+    image_url = models.URLField(blank=True)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='idea')
     recipients = models.ManyToManyField(Recipient, related_name='gift_ideas')
     occasions = models.ManyToManyField(Occasion, related_name='gift_ideas', blank=True)

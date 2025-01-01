@@ -115,6 +115,36 @@ class MetadataExtractor:
             if desc_tag:
                 metadata['description'] = desc_tag.get('content')
         
+        # Try to find image (with special handling for Amazon)
+        if not metadata.get('image_url'):
+            # Try Amazon's main product image
+            main_image = soup.find('img', id='landingImage') or soup.find('img', id='imgBlkFront')
+            if main_image:
+                # Get the highest resolution image URL
+                image_url = main_image.get('data-old-hires') or main_image.get('src')
+                if image_url:
+                    metadata['image_url'] = image_url
+            else:
+                # Try other common image selectors
+                image_selectors = [
+                    'meta[property="og:image"]',
+                    'meta[name="twitter:image"]',
+                    'img[itemprop="image"]',
+                    '#main-image',  # Common for various e-commerce sites
+                    '.product-image img',  # Common for various e-commerce sites
+                ]
+                
+                for selector in image_selectors:
+                    try:
+                        img = soup.select_one(selector)
+                        if img:
+                            image_url = img.get('content') or img.get('src')
+                            if image_url:
+                                metadata['image_url'] = image_url
+                                break
+                    except Exception:
+                        continue
+        
         # Try to find price (common patterns)
         if not metadata.get('price'):
             # Look for elements with price-related classes or IDs

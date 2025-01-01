@@ -116,6 +116,7 @@ def add_gift(request):
             description=data.get('description', ''),
             price=data.get('price'),
             url=data.get('url', ''),
+            image_url=data.get('image_url', ''),
             status='idea'
         )
         

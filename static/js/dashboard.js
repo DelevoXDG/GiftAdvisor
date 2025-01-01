@@ -55,6 +55,7 @@ class Dashboard {
             description: this.addGiftForm.querySelector('[name="description"]').value,
             price: parseFloat(this.addGiftForm.querySelector('[name="price"]').value),
             url: this.addGiftForm.querySelector('[name="url"]').value,
+            image_url: this.addGiftForm.querySelector('[name="image_url"]')?.value || '',
             recipients: Array.from(this.addGiftForm.querySelector('select[multiple]').selectedOptions).map(opt => opt.value),
             tags: Array.from(this.addGiftForm.querySelectorAll('select[multiple]')[1].selectedOptions).map(opt => opt.value)
         };
@@ -114,6 +115,7 @@ class Dashboard {
                 this.addGiftForm.querySelector('textarea[name="description"]').value = data.description || '';
                 this.addGiftForm.querySelector('input[name="price"]').value = data.price || '';
                 this.addGiftForm.querySelector('input[name="url"]').value = data.url || '';
+                this.addGiftForm.querySelector('input[name="image_url"]').value = data.image_url || '';
                 
                 this.bsModal.show();
                 this.quickAddForm.reset();
