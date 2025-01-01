@@ -26,7 +26,7 @@ class IndexView(TemplateView):
             gifts = GiftIdea.objects.filter(user=user)
             
             if not gifts.exists():
-                # Try to find the test user's gifts
+                # Try to find the test user's gifts
                 test_user = User.objects.filter(email='test@example.com').first()
                 if test_user:
                     gifts = GiftIdea.objects.filter(user=test_user)
