@@ -22,6 +22,7 @@ class Dashboard {
         this.isExtracting = false;
         
         this.initializeEventListeners();
+        this.restoreLayoutPreference();
     }
 
     initializeEventListeners() {
@@ -40,6 +41,13 @@ class Dashboard {
         this.filterForm.querySelectorAll('select').forEach(select => {
             select.addEventListener('change', () => this.filterForm.submit());
         });
+    }
+
+    restoreLayoutPreference() {
+        const savedLayout = localStorage.getItem('giftLayoutPreference');
+        if (savedLayout) {
+            this.toggleView(savedLayout, false);
+        }
     }
 
     async handleGiftSubmit(e) {
@@ -137,7 +145,7 @@ class Dashboard {
         this.isSubmitting = false;
     }
 
-    toggleView(type) {
+    toggleView(type, savePreference = true) {
         if (type === 'grid') {
             this.gridViewBtn.classList.add('active');
             this.listViewBtn.classList.remove('active');
@@ -148,6 +156,10 @@ class Dashboard {
             this.gridViewBtn.classList.remove('active');
             this.giftList.classList.remove('d-none');
             this.giftGrid.classList.add('d-none');
+        }
+
+        if (savePreference) {
+            localStorage.setItem('giftLayoutPreference', type);
         }
     }
 }
