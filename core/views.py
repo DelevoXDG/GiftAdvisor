@@ -4,6 +4,10 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from .models import GiftIdea, Tag, Recipient
 from django.db.models import Min, Max
 from django.contrib.auth import get_user_model
+from django.http import JsonResponse
+from .services.metadata_extractor import MetadataExtractor
+from django.views.decorators.http import require_http_methods
+import json
 
 User = get_user_model()
 
@@ -75,3 +79,58 @@ class IndexView(TemplateView):
             })
             
         return context
+
+@require_http_methods(["POST"])
+def extract_metadata(request):
+    """Extract metadata from a product URL."""
+    try:
+        data = json.loads(request.body)
+        url = data.get('url')
+        
+        if not url:
+            return JsonResponse({'error': 'URL is required'}, status=400)
+        
+        extractor = MetadataExtractor()
+        metadata = extractor.extract(url)
+        
+        if 'error' in metadata:
+            return JsonResponse({'error': metadata['error']}, status=400)
+        
+        return JsonResponse(metadata)
+        
+    except json.JSONDecodeError:
+        return JsonResponse({'error': 'Invalid JSON'}, status=400)
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
+
+@require_http_methods(["POST"])
+def add_gift(request):
+    """Add a new gift idea."""
+    try:
+        data = json.loads(request.body)
+        
+        # Create the gift idea
+        gift = GiftIdea.objects.create(
+            user=request.user,
+            title=data.get('title'),
+            description=data.get('description', ''),
+            price=data.get('price'),
+            url=data.get('url', ''),
+            status='idea'
+        )
+        
+        # Add recipients if provided
+        if 'recipients' in data:
+            gift.recipients.set(data['recipients'])
+        
+        # Handle tags
+        if 'tags' in data:
+            gift.tags.set(data['tags'])
+        
+        return JsonResponse({
+            'message': 'Gift idea added successfully',
+            'id': gift.id
+        })
+        
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=400)

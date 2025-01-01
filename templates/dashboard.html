@@ -31,12 +31,14 @@
             <!-- Quick Add Container -->
             <div class="quick-add-section mb-4">
                 <h2 class="fw-bold mb-3">Quick Add</h2>
-                <form class="d-flex gap-3">
+                <form class="d-flex gap-3" id="quickAddForm">
+                    {% csrf_token %}
                     <div class="flex-grow-1 position-relative">
                         <div class="modern-input-wrapper">
                             <i class="bi bi-link-45deg input-icon"></i>
                             <input type="url" 
                                    class="modern-input" 
+                                   name="url"
                                    placeholder="Paste a link to instantly add a gift idea..."
                                    autocomplete="off"
                                    spellcheck="false">
@@ -194,23 +196,23 @@
                 <form id="addGiftForm">
                     <div class="mb-3">
                         <label class="form-label">Title</label>
-                        <input type="text" class="form-control" required>
+                        <input type="text" name="title" class="form-control" required>
                     </div>
                     <div class="mb-3">
                         <label class="form-label">Description</label>
-                        <textarea class="form-control" rows="3"></textarea>
+                        <textarea name="description" class="form-control" rows="3"></textarea>
                     </div>
                     <div class="mb-3">
                         <label class="form-label">Price</label>
-                        <input type="number" class="form-control" step="0.01" min="0" required>
+                        <input type="number" name="price" class="form-control" step="0.01" min="0" required>
                     </div>
                     <div class="mb-3">
                         <label class="form-label">URL</label>
-                        <input type="url" class="form-control">
+                        <input type="url" name="url" class="form-control">
                     </div>
                     <div class="mb-3">
                         <label class="form-label">Recipients</label>
-                        <select class="form-select" multiple>
+                        <select class="form-select" name="recipients" multiple>
                             {% for recipient in recipients %}
                                 <option value="{{ recipient.id }}">{{ recipient.name }}</option>
                             {% endfor %}
@@ -218,7 +220,7 @@
                     </div>
                     <div class="mb-3">
                         <label class="form-label">Tags</label>
-                        <select class="form-select" multiple>
+                        <select class="form-select" name="tags" multiple>
                             {% for tag in tags %}
                                 <option value="{{ tag.id }}">{{ tag.name }}</option>
                             {% endfor %}
@@ -237,6 +239,99 @@
 {% block extra_js %}
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+    // Add Gift form submission
+    const addGiftForm = document.getElementById('addGiftForm');
+    const addGiftModal = document.getElementById('addGiftModal');
+    const bsModal = new bootstrap.Modal(addGiftModal);
+
+    addGiftForm.addEventListener('submit', async function(e) {
+        e.preventDefault();
+        
+        const formData = {
+            title: addGiftForm.querySelector('[name="title"]').value,
+            description: addGiftForm.querySelector('[name="description"]').value,
+            price: parseFloat(addGiftForm.querySelector('[name="price"]').value),
+            url: addGiftForm.querySelector('[name="url"]').value,
+            recipients: Array.from(addGiftForm.querySelector('select[multiple]').selectedOptions).map(opt => opt.value),
+            tags: Array.from(addGiftForm.querySelectorAll('select[multiple]')[1].selectedOptions).map(opt => opt.value)
+        };
+
+        try {
+            const response = await fetch('/api/gifts/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                },
+                body: JSON.stringify(formData)
+            });
+
+            const data = await response.json();
+            
+            if (response.ok) {
+                // Close modal and refresh page to show new gift
+                bsModal.hide();
+                window.location.reload();
+            } else {
+                alert(data.error || 'Failed to add gift idea');
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            alert('Failed to add gift idea');
+        }
+    });
+
+    // Quick Add form submission
+    const quickAddForm = document.getElementById('quickAddForm');
+    const quickAddInput = quickAddForm.querySelector('input[name="url"]');
+    const quickAddButton = quickAddForm.querySelector('button[type="submit"]');
+
+    quickAddForm.addEventListener('submit', async function(e) {
+        e.preventDefault();
+        
+        // Disable form while processing
+        quickAddInput.disabled = true;
+        quickAddButton.disabled = true;
+        
+        try {
+            const response = await fetch('/api/extract-metadata/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                },
+                body: JSON.stringify({
+                    url: quickAddInput.value
+                })
+            });
+
+            const data = await response.json();
+            
+            if (response.ok) {
+                // Pre-fill the modal with extracted data
+                const modal = new bootstrap.Modal(document.getElementById('addGiftModal'));
+                const form = document.getElementById('addGiftForm');
+                
+                form.querySelector('input[name="title"]').value = data.title || '';
+                form.querySelector('textarea[name="description"]').value = data.description || '';
+                form.querySelector('input[name="price"]').value = data.price || '';
+                form.querySelector('input[name="url"]').value = data.url || '';
+                
+                modal.show();
+                quickAddForm.reset();
+            } else {
+                alert(data.error || 'Failed to extract metadata');
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            alert('Failed to process the URL');
+        } finally {
+            // Re-enable form
+            quickAddInput.disabled = false;
+            quickAddButton.disabled = false;
+        }
+    });
+
     // View toggling
     const gridViewBtn = document.getElementById('gridViewBtn');
     const listViewBtn = document.getElementById('listViewBtn');
