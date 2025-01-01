@@ -442,9 +442,18 @@
             flex-shrink: 0;
         }
 
-        .circular-button:hover {
+        .circular-button:hover:not(:disabled) {
             transform: translateY(-2px) rotate(90deg);
             box-shadow: 0 4px 12px rgba(255, 71, 87, 0.25);
+        }
+
+        .circular-button:disabled {
+            background-color: #fcdfdf;
+            border-color: #FFE5E5; 
+            color: #f76565;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
         }
     </style>
     {% block extra_css %}{% endblock %}

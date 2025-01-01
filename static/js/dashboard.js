@@ -20,9 +20,13 @@ class Dashboard {
         // State
         this.isSubmitting = false;
         this.isExtracting = false;
+        this.currentExtraction = null;
         
         this.initializeEventListeners();
         this.restoreLayoutPreference();
+        
+        // Initial button state
+        this.updateQuickAddButtonState();
     }
 
     initializeEventListeners() {
@@ -32,6 +36,7 @@ class Dashboard {
         
         // Quick add form
         this.quickAddForm.addEventListener('submit', (e) => this.handleQuickAdd(e));
+        this.quickAddInput.addEventListener('input', () => this.updateQuickAddButtonState());
         
         // View toggling
         this.gridViewBtn.addEventListener('click', () => this.toggleView('grid'));
@@ -41,6 +46,11 @@ class Dashboard {
         this.filterForm.querySelectorAll('select').forEach(select => {
             select.addEventListener('change', () => this.filterForm.submit());
         });
+    }
+
+    updateQuickAddButtonState() {
+        const hasValue = this.quickAddInput.value.trim() !== '';
+        this.quickAddButton.disabled = !hasValue;
     }
 
     restoreLayoutPreference() {
@@ -97,10 +107,22 @@ class Dashboard {
     async handleQuickAdd(e) {
         e.preventDefault();
         if (this.isExtracting) return;
-        this.isExtracting = true;
         
+        const url = this.quickAddInput.value.trim();
+        if (!url) return;
+        
+        this.isExtracting = true;
         this.quickAddInput.disabled = true;
         this.quickAddButton.disabled = true;
+        
+        // Cancel any ongoing extraction
+        if (this.currentExtraction) {
+            this.currentExtraction.abort();
+        }
+        
+        // Create new AbortController for this extraction
+        const controller = new AbortController();
+        this.currentExtraction = controller;
         
         try {
             const response = await fetch('/api/extract-metadata/', {
@@ -109,34 +131,42 @@ class Dashboard {
                     'Content-Type': 'application/json',
                     'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
                 },
-                body: JSON.stringify({
-                    url: this.quickAddInput.value
-                })
+                body: JSON.stringify({ url }),
+                signal: controller.signal
             });
 
-            const data = await response.json();
-            
-            if (response.ok) {
-                this.addGiftForm.reset();
+            // Only proceed if this is still the current extraction
+            if (this.currentExtraction === controller) {
+                const data = await response.json();
                 
-                this.addGiftForm.querySelector('input[name="title"]').value = data.title || '';
-                this.addGiftForm.querySelector('textarea[name="description"]').value = data.description || '';
-                this.addGiftForm.querySelector('input[name="price"]').value = data.price || '';
-                this.addGiftForm.querySelector('input[name="url"]').value = data.url || '';
-                this.addGiftForm.querySelector('input[name="image_url"]').value = data.image_url || '';
-                
-                this.bsModal.show();
-                this.quickAddForm.reset();
-            } else {
-                alert(data.error || 'Failed to extract metadata');
+                if (response.ok) {
+                    this.addGiftForm.reset();
+                    
+                    this.addGiftForm.querySelector('input[name="title"]').value = data.title || '';
+                    this.addGiftForm.querySelector('textarea[name="description"]').value = data.description || '';
+                    this.addGiftForm.querySelector('input[name="price"]').value = data.price || '';
+                    this.addGiftForm.querySelector('input[name="url"]').value = data.url || '';
+                    this.addGiftForm.querySelector('input[name="image_url"]').value = data.image_url || '';
+                    
+                    this.bsModal.show();
+                    this.quickAddForm.reset();
+                } else {
+                    alert(data.error || 'Failed to extract metadata');
+                }
             }
         } catch (error) {
-            console.error('Error:', error);
-            alert('Failed to process the URL');
+            if (error.name !== 'AbortError') {
+                console.error('Error:', error);
+                alert('Failed to process the URL');
+            }
         } finally {
-            this.quickAddInput.disabled = false;
-            this.quickAddButton.disabled = false;
-            this.isExtracting = false;
+            if (this.currentExtraction === controller) {
+                this.currentExtraction = null;
+                this.isExtracting = false;
+                this.quickAddInput.disabled = false;
+                this.quickAddButton.disabled = false;
+                this.updateQuickAddButtonState();
+            }
         }
     }
 
