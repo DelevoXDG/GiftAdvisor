@@ -294,6 +294,7 @@
             justify-content: center;
             color: var(--primary-color);
             overflow: hidden;
+            position: relative;
         }
 
         .gift-card .empty-img {
@@ -301,9 +302,11 @@
         }
 
         .gift-list .empty-img {
+            min-width: 100px;
             width: 100px;
             height: 100px;
             border-radius: 0.5rem;
+            flex-shrink: 0;
         }
 
         .gift-image {
@@ -315,6 +318,10 @@
 
         .gift-card:hover .gift-image {
             transform: scale(1.05);
+        }
+
+        .gift-list .gift-item:hover .gift-image {
+            transform: scale(1.1);
         }
 
         /* Filters */
