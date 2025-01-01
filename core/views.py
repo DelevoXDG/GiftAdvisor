@@ -64,7 +64,7 @@ class IndexView(TemplateView):
             )
             
             context.update({
-                'gifts': gifts.distinct(),
+                'gifts': gifts.distinct().order_by('-created_at'),
                 'tags': Tag.objects.filter(gift_ideas__user=user).distinct(),
                 'recipients': Recipient.objects.filter(user=user),
                 'price_stats': price_stats,
