@@ -329,6 +329,104 @@
             border-color: var(--primary-color);
             box-shadow: 0 0 0 0.2rem rgba(255, 71, 87, 0.25);
         }
+
+        /* Modern Input Bar */
+        .input-section {
+            position: relative;
+        }
+
+        .modern-input-wrapper {
+            position: relative;
+            transition: all 0.3s ease;
+        }
+
+        .modern-input {
+            width: 100%;
+            padding: 1rem 1rem 1rem 3rem;
+            font-size: 1rem;
+            line-height: 1.5;
+            color: var(--text-color);
+            background-color: var(--card-background);
+            border: 2px solid var(--border-color);
+            border-radius: 1rem;
+            transition: all 0.3s ease;
+            height: 48px;  /* Match height with circular button */
+        }
+
+        .modern-input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 4px rgba(255, 71, 87, 0.1);
+        }
+
+        .input-icon {
+            position: absolute;
+            left: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 1.5rem;
+            color: var(--primary-color);
+            opacity: 0.8;
+            pointer-events: none;
+        }
+
+        .modern-button {
+            padding: 0.8rem 1.5rem;
+            font-size: 1rem;
+            border-radius: 0.75rem;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-weight: 600;
+        }
+
+        .modern-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(255, 71, 87, 0.25);
+        }
+
+        /* Remove browser's default URL styling */
+        .modern-input:-webkit-autofill,
+        .modern-input:-webkit-autofill:hover,
+        .modern-input:-webkit-autofill:focus {
+            -webkit-box-shadow: 0 0 0px 1000px var(--card-background) inset;
+            -webkit-text-fill-color: var(--text-color);
+            transition: background-color 5000s ease-in-out 0s;
+        }
+
+        .modern-input::placeholder {
+            color: #9CA3AF;
+            opacity: 0.8;
+        }
+
+        /* Quick Add Section */
+        .quick-add-section {
+            background: var(--card-background);
+            border: 1px solid var(--border-color);
+            border-radius: 1rem;
+            padding: 1.5rem;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        }
+
+        /* Circular Button */
+        .circular-button {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            padding: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            transition: all 0.3s ease;
+            flex-shrink: 0;
+        }
+
+        .circular-button:hover {
+            transform: translateY(-2px) rotate(90deg);
+            box-shadow: 0 4px 12px rgba(255, 71, 87, 0.25);
+        }
     </style>
     {% block extra_css %}{% endblock %}
 </head>
