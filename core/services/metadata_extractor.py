@@ -4,21 +4,56 @@ from price_parser import Price
 from urllib.parse import urlparse
 from typing import Dict
 import json
+import random
 
 class MetadataExtractor:
     """Service for extracting metadata from product URLs."""
     
     def __init__(self):
-        self.headers = {
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+        # List of common user agents
+        self.user_agents = [
+            'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+            'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+            'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+            'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.2 Safari/605.1.15',
+            'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Edge/120.0.0.0'
+        ]
+
+    def _get_headers(self, url: str) -> Dict:
+        """Generate headers that look like a real browser."""
+        domain = urlparse(url).netloc
+        return {
+            'User-Agent': random.choice(self.user_agents),
+            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8',
+            'Accept-Language': 'en-US,en;q=0.5',
+            'Accept-Encoding': 'gzip, deflate, br',
+            'DNT': '1',
+            'Connection': 'keep-alive',
+            'Upgrade-Insecure-Requests': '1',
+            'Sec-Fetch-Dest': 'document',
+            'Sec-Fetch-Mode': 'navigate',
+            'Sec-Fetch-Site': 'none',
+            'Sec-Fetch-User': '?1',
+            'Host': domain,
+            'Referer': f'https://www.google.com/search?q={domain}',
+            'Cache-Control': 'max-age=0'
         }
 
     def extract(self, url: str) -> Dict:
         """Extract metadata from a given URL."""
         try:
-            response = requests.get(url, headers=self.headers, timeout=10)
-            response.raise_for_status()
+            # Create a session to maintain cookies
+            session = requests.Session()
             
+            # First, make a GET request to the homepage to get cookies
+            domain = urlparse(url).scheme + "://" + urlparse(url).netloc
+            session.get(domain, headers=self._get_headers(domain), timeout=10)
+            
+            # Then make the actual request
+            response = session.get(url, headers=self._get_headers(url), timeout=10)
+            response.raise_for_status()
+
+            print("Response: ", response.text)
             soup = BeautifulSoup(response.text, 'lxml')
             
             # Try different methods to get the data

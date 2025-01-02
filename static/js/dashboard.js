@@ -19,11 +19,12 @@ class Dashboard {
         
         // State
         this.isSubmitting = false;
-        this.isExtracting = false;
-        this.currentExtraction = null;
+		this.isExtracting = false;
+		        this.currentExtraction = null;
+
         
-        this.initializeEventListeners();
-        this.restoreLayoutPreference();
+		this.initializeEventListeners();
+		this.restoreLayoutPreference();
         
         // Initial button state
         this.updateQuickAddButtonState();
@@ -35,8 +36,8 @@ class Dashboard {
         document.getElementById('submitGiftBtn').addEventListener('click', (e) => this.handleGiftSubmit(e));
         
         // Quick add form
-        this.quickAddForm.addEventListener('submit', (e) => this.handleQuickAdd(e));
-        this.quickAddInput.addEventListener('input', () => this.updateQuickAddButtonState());
+		this.quickAddForm.addEventListener('submit', (e) => this.handleQuickAdd(e));
+		this.quickAddInput.addEventListener('input', () => this.updateQuickAddButtonState());
         
         // View toggling
         this.gridViewBtn.addEventListener('click', () => this.toggleView('grid'));
@@ -46,8 +47,8 @@ class Dashboard {
         this.filterForm.querySelectorAll('select').forEach(select => {
             select.addEventListener('change', () => this.filterForm.submit());
         });
-    }
-
+	}
+	
     updateQuickAddButtonState() {
         const hasValue = this.quickAddInput.value.trim() !== '';
         this.quickAddButton.disabled = !hasValue;
@@ -106,16 +107,17 @@ class Dashboard {
 
     async handleQuickAdd(e) {
         e.preventDefault();
-        if (this.isExtracting) return;
-        
-        const url = this.quickAddInput.value.trim();
-        if (!url) return;
-        
+		if (this.isExtracting) return;
+		
+		const url = this.quickAddInput.value.trim();
+		if (!url) return;
+		
         this.isExtracting = true;
-        this.quickAddInput.disabled = true;
-        this.quickAddButton.disabled = true;
         
-        // Cancel any ongoing extraction
+        this.quickAddInput.disabled = true;
+		this.quickAddButton.disabled = true;
+		
+		        // Cancel any ongoing extraction
         if (this.currentExtraction) {
             this.currentExtraction.abort();
         }
@@ -123,6 +125,7 @@ class Dashboard {
         // Create new AbortController for this extraction
         const controller = new AbortController();
         this.currentExtraction = controller;
+      
         
         try {
             const response = await fetch('/api/extract-metadata/', {
@@ -131,43 +134,45 @@ class Dashboard {
                     'Content-Type': 'application/json',
                     'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
                 },
-                body: JSON.stringify({ url }),
-                signal: controller.signal
-            });
-
+                body: JSON.stringify({
+                    url: this.quickAddInput.value
+				}),
+				signal: controller.signal
+			});
+			
             // Only proceed if this is still the current extraction
             if (this.currentExtraction === controller) {
-                const data = await response.json();
-                
-                if (response.ok) {
-                    this.addGiftForm.reset();
-                    
-                    this.addGiftForm.querySelector('input[name="title"]').value = data.title || '';
-                    this.addGiftForm.querySelector('textarea[name="description"]').value = data.description || '';
-                    this.addGiftForm.querySelector('input[name="price"]').value = data.price || '';
-                    this.addGiftForm.querySelector('input[name="url"]').value = data.url || '';
-                    this.addGiftForm.querySelector('input[name="image_url"]').value = data.image_url || '';
-                    
-                    this.bsModal.show();
-                    this.quickAddForm.reset();
-                } else {
-                    alert(data.error || 'Failed to extract metadata');
-                }
+				const data = await response.json();
+				
+				if (response.ok) {
+					this.addGiftForm.reset();
+					
+					this.addGiftForm.querySelector('input[name="title"]').value = data.title || '';
+					this.addGiftForm.querySelector('textarea[name="description"]').value = data.description || '';
+					this.addGiftForm.querySelector('input[name="price"]').value = data.price || '';
+					this.addGiftForm.querySelector('input[name="url"]').value = data.url || '';
+					this.addGiftForm.querySelector('input[name="image_url"]').value = data.image_url || '';
+					
+					this.bsModal.show();
+					this.quickAddForm.reset();
+				} else {
+					alert(data.error || 'Failed to extract metadata');
+				}
             }
-        } catch (error) {
-            if (error.name !== 'AbortError') {
-                console.error('Error:', error);
-                alert('Failed to process the URL');
-            }
-        } finally {
-            if (this.currentExtraction === controller) {
-                this.currentExtraction = null;
-                this.isExtracting = false;
-                this.quickAddInput.disabled = false;
-                this.quickAddButton.disabled = false;
-                this.updateQuickAddButtonState();
-            }
-        }
+		} catch (error) {
+			if (error.name !== 'AbortError') {
+				console.error('Error:', error);
+				alert('Failed to process the URL');
+			}
+		} finally {
+			if (this.currentExtraction === controller) {
+				this.currentExtraction = null;
+				this.isExtracting = false;
+				this.quickAddInput.disabled = false;
+				this.quickAddButton.disabled = false;
+				this.updateQuickAddButtonState();
+			}
+		}
     }
 
     handleModalHidden() {
@@ -186,8 +191,8 @@ class Dashboard {
             this.gridViewBtn.classList.remove('active');
             this.giftList.classList.remove('d-none');
             this.giftGrid.classList.add('d-none');
-        }
-
+		}
+		
         if (savePreference) {
             localStorage.setItem('giftLayoutPreference', type);
         }
