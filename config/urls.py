@@ -26,7 +26,8 @@ from core.views import (
     RecipientProfileView,
     search_gifts,
     recent_gifts,
-    add_gift_to_recipient
+    add_gift_to_recipient,
+    gift_detail
 )
 
 urlpatterns = [
@@ -34,6 +35,7 @@ urlpatterns = [
     path('', IndexView.as_view(), name='index'),
     path('recipients/', RecipientsView.as_view(), name='recipients'),
     path('recipients/<int:recipient_id>/', RecipientProfileView.as_view(), name='recipient_profile'),
+    path('gifts/<int:gift_id>/', gift_detail, name='gift_detail'),
     path('accounts/', include('allauth.urls')),
     
     # API endpoints

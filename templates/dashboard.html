@@ -122,61 +122,65 @@
                     <!-- Grid View -->
                     <div class="gift-grid">
                         {% for gift in gifts %}
-                        <div class="gift-card">
-                            <div class="empty-img">
-                                {% if gift.image_url %}
-                                    <img src="{{ gift.image_url }}" alt="{{ gift.title }}" class="gift-image">
-                                {% else %}
-                                    <i class="bi bi-image-fill" style="font-size: 2rem; opacity: 0.5;"></i>
-                                {% endif %}
-                            </div>
-                            <div class="p-4">
-                                <h5 class="fw-bold mb-2" style="font-size: 1.1rem;">{{ gift.title }}</h5>
-                                <p class="text-primary fw-bold mb-3" style="font-size: 0.95rem;">${{ gift.price }}</p>
-                                <div class="d-flex flex-wrap gap-2">
-                                    <span class="badge {% if gift.status == 'idea' %}bg-warning{% else %}bg-info{% endif %}" style="font-size: 0.8rem;">
-                                        {{ gift.get_status_display }}
-                                    </span>
-                                    {% for tag in gift.tags.all|slice:":3" %}
-                                        <span class="badge bg-primary" style="font-size: 0.8rem;">{{ tag.name }}</span>
-                                    {% endfor %}
-                                    {% if gift.tags.count > 3 %}
-                                        <span class="badge bg-secondary" style="font-size: 0.8rem;">+{{ gift.tags.count|add:"-3" }}</span>
+                        <a href="{% url 'gift_detail' gift.id %}" class="text-decoration-none text-reset">
+                            <div class="gift-card">
+                                <div class="empty-img">
+                                    {% if gift.image_url %}
+                                        <img src="{{ gift.image_url }}" alt="{{ gift.title }}" class="gift-image">
+                                    {% else %}
+                                        <i class="bi bi-image-fill" style="font-size: 2rem; opacity: 0.5;"></i>
                                     {% endif %}
                                 </div>
+                                <div class="p-4">
+                                    <h5 class="fw-bold mb-2" style="font-size: 1.1rem;">{{ gift.title }}</h5>
+                                    <p class="text-primary fw-bold mb-3" style="font-size: 0.95rem;">${{ gift.price }}</p>
+                                    <div class="d-flex flex-wrap gap-2">
+                                        <span class="badge {% if gift.status == 'idea' %}bg-warning{% else %}bg-info{% endif %}" style="font-size: 0.8rem;">
+                                            {{ gift.get_status_display }}
+                                        </span>
+                                        {% for tag in gift.tags.all|slice:":3" %}
+                                            <span class="badge bg-primary" style="font-size: 0.8rem;">{{ tag.name }}</span>
+                                        {% endfor %}
+                                        {% if gift.tags.count > 3 %}
+                                            <span class="badge bg-secondary" style="font-size: 0.8rem;">+{{ gift.tags.count|add:"-3" }}</span>
+                                        {% endif %}
+                                    </div>
+                                </div>
                             </div>
-                        </div>
+                        </a>
                         {% endfor %}
                     </div>
 
                     <!-- List View -->
                     <div class="gift-list d-none">
                         {% for gift in gifts %}
-                        <div class="gift-item shadow-sm clickable">
-                            <div class="empty-img">
-                                {% if gift.image_url %}
-                                    <img src="{{ gift.image_url }}" alt="{{ gift.title }}" class="gift-image">
-                                {% else %}
-                                    <i class="bi bi-image"></i>
-                                {% endif %}
-                            </div>
-                            <div class="flex-grow-1">
-                                <div class="d-flex justify-content-between align-items-start mb-2">
-                                    <div>
-                                        <h5 class="mb-1" style="font-size: 1.1rem;">{{ gift.title }}</h5>
-                                        <p class="text-muted mb-2" style="font-size: 0.95rem;">${{ gift.price }}</p>
+                        <a href="{% url 'gift_detail' gift.id %}" class="text-decoration-none text-reset">
+                            <div class="gift-item shadow-sm clickable">
+                                <div class="empty-img">
+                                    {% if gift.image_url %}
+                                        <img src="{{ gift.image_url }}" alt="{{ gift.title }}" class="gift-image">
+                                    {% else %}
+                                        <i class="bi bi-image"></i>
+                                    {% endif %}
+                                </div>
+                                <div class="flex-grow-1">
+                                    <div class="d-flex justify-content-between align-items-start mb-2">
+                                        <div>
+                                            <h5 class="mb-1" style="font-size: 1.1rem;">{{ gift.title }}</h5>
+                                            <p class="text-muted mb-2" style="font-size: 0.95rem;">${{ gift.price }}</p>
+                                        </div>
+                                        <span class="badge bg-{% if gift.status == 'idea' %}warning{% else %}info{% endif %}">
+                                            {{ gift.get_status_display }}
+                                        </span>
                                     </div>
-                                    <span class="badge bg-{% if gift.status == 'idea' %}warning{% else %}info{% endif %}">
-                                        {{ gift.get_status_display }}
-                                    </span>
-                                </div>
-                                <div>
-                                    {% for tag in gift.tags.all %}
-                                        <span class="badge bg-primary me-1">{{ tag.name }}</span>
-                                    {% endfor %}
+                                    <div>
+                                        {% for tag in gift.tags.all %}
+                                            <span class="badge bg-primary me-1">{{ tag.name }}</span>
+                                        {% endfor %}
+                                    </div>
                                 </div>
                             </div>
-                        </div>
+                        </a>
                         {% endfor %}
                     </div>
                 {% else %}

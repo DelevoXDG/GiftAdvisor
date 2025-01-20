@@ -306,3 +306,23 @@ def add_gift_to_recipient(request, recipient_id):
         
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=400)
+
+def gift_detail(request, gift_id):
+    gift = get_object_or_404(GiftIdea, id=gift_id)
+    
+    # Get similar gifts based on shared tags
+    similar_gifts = GiftIdea.objects.filter(
+        tags__in=gift.tags.all()
+    ).exclude(
+        id=gift.id
+    ).distinct()[:6]  # Limit to 6 similar gifts
+    
+    context = {
+        'gift': gift,
+        'similar_gifts': similar_gifts,
+        'status_choices': GiftIdea.STATUS_CHOICES,
+        'all_tags': Tag.objects.all(),
+        'all_recipients': Recipient.objects.all(),
+    }
+    
+    return render(request, 'gift_detail.html', context)
