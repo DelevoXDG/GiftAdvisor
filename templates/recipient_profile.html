@@ -39,9 +39,9 @@
                 <div class="card-body p-4">
                     <div class="d-flex justify-content-between align-items-start mb-4">
                         <div class="d-flex align-items-center gap-3">
-                            <i class="bi bi-person-circle text-muted" style="font-size: 3rem;"></i>
+                            <i class="bi bi-person-circle text-muted" style="font-size: 2.5rem;"></i>
                             <div>
-                                <h2 class="fw-bold mb-1">{{ recipient.name }}</h2>
+                                <h2 class="fw-bold mb-1" style="font-size: 1.75rem;">{{ recipient.name }}</h2>
                                 <span class="badge bg-primary">{{ recipient.get_relationship_display }}</span>
                             </div>
                         </div>
@@ -55,17 +55,17 @@
                         <div class="profile-details">
                             {% if recipient.birth_date %}
                                 <div class="mb-3">
-                                    <h6 class="fw-bold mb-2">Birthday</h6>
-                                    <p class="mb-0">{{ recipient.birth_date|date:"d.m.Y" }}</p>
+                                    <h6 class="fw-bold mb-2" style="font-size: 0.9rem;">Birthday</h6>
+                                    <p class="mb-0" style="font-size: 0.95rem;">{{ recipient.birth_date|date:"d.m.Y" }}</p>
                                 </div>
                             {% endif %}
 
                             {% if recipient.interests.all %}
                                 <div class="mb-3">
-                                    <h6 class="fw-bold mb-2">Interests</h6>
+                                    <h6 class="fw-bold mb-2" style="font-size: 0.9rem;">Interests</h6>
                                     <div class="d-flex flex-wrap gap-2">
                                         {% for interest in recipient.interests.all %}
-                                            <span class="badge bg-secondary">{{ interest.name }}</span>
+                                            <span class="badge bg-secondary" style="font-size: 0.8rem;">{{ interest.name }}</span>
                                         {% endfor %}
                                     </div>
                                 </div>
@@ -73,8 +73,8 @@
 
                             {% if recipient.notes %}
                                 <div>
-                                    <h6 class="fw-bold mb-2">Notes</h6>
-                                    <p class="mb-0">{{ recipient.notes }}</p>
+                                    <h6 class="fw-bold mb-2" style="font-size: 0.9rem;">Notes</h6>
+                                    <p class="mb-0" style="font-size: 0.95rem;">{{ recipient.notes }}</p>
                                 </div>
                             {% endif %}
                         </div>
@@ -86,7 +86,7 @@
             <div class="card rounded-4 border-0 shadow">
                 <div class="card-body p-4">
                     <div class="d-flex justify-content-between align-items-center mb-4">
-                        <h2 class="fw-bold">Gift Ideas</h2>
+                        <h2 class="fw-bold" style="font-size: 1.75rem;">Gift Ideas</h2>
                         <div class="d-flex gap-3">
                             <div class="btn-group" role="group">
                                 <button type="button" class="btn btn-outline-primary active px-3" id="gridViewBtn">
@@ -116,17 +116,17 @@
                                     {% endif %}
                                 </div>
                                 <div class="p-4">
-                                    <h5 class="fw-bold mb-2">{{ gift.title }}</h5>
-                                    <p class="text-primary fw-bold mb-3">${{ gift.price }}</p>
+                                    <h5 class="fw-bold mb-2" style="font-size: 1.1rem;">{{ gift.title }}</h5>
+                                    <p class="text-primary fw-bold mb-3" style="font-size: 0.95rem;">${{ gift.price }}</p>
                                     <div class="d-flex flex-wrap gap-2">
-                                        <span class="badge {% if gift.status == 'idea' %}bg-warning{% else %}bg-info{% endif %}">
+                                        <span class="badge {% if gift.status == 'idea' %}bg-warning{% else %}bg-info{% endif %}" style="font-size: 0.8rem;">
                                             {{ gift.get_status_display }}
                                         </span>
                                         {% for tag in gift.tags.all|slice:":3" %}
-                                            <span class="badge bg-primary">{{ tag.name }}</span>
+                                            <span class="badge bg-primary" style="font-size: 0.8rem;">{{ tag.name }}</span>
                                         {% endfor %}
                                         {% if gift.tags.count > 3 %}
-                                            <span class="badge bg-secondary">+{{ gift.tags.count|add:"-3" }}</span>
+                                            <span class="badge bg-secondary" style="font-size: 0.8rem;">+{{ gift.tags.count|add:"-3" }}</span>
                                         {% endif %}
                                     </div>
                                 </div>
@@ -148,8 +148,8 @@
                                 <div class="flex-grow-1">
                                     <div class="d-flex justify-content-between align-items-start mb-2">
                                         <div>
-                                            <h5 class="mb-1">{{ gift.title }}</h5>
-                                            <p class="text-muted mb-2">${{ gift.price }}</p>
+                                            <h5 class="mb-1" style="font-size: 1.1rem;">{{ gift.title }}</h5>
+                                            <p class="text-muted mb-2" style="font-size: 0.95rem;">${{ gift.price }}</p>
                                         </div>
                                         <span class="badge bg-{% if gift.status == 'idea' %}warning{% else %}info{% endif %}">
                                             {{ gift.get_status_display }}
@@ -166,9 +166,9 @@
                         </div>
                     {% else %}
                         <div class="text-center py-5">
-                            <i class="bi bi-gift mb-4" style="font-size: 3.5rem; opacity: 0.5;"></i>
-                            <h4 class="fw-bold">No gift ideas yet</h4>
-                            <p class="text-muted">Add your first gift idea for {{ recipient.name }}.</p>
+                            <i class="bi bi-gift mb-4" style="font-size: 3rem; opacity: 0.5;"></i>
+                            <h4 class="fw-bold" style="font-size: 1.25rem;">No gift ideas yet</h4>
+                            <p class="text-muted" style="font-size: 0.95rem;">Add your first gift idea for {{ recipient.name }}.</p>
                         </div>
                     {% endif %}
                 </div>
