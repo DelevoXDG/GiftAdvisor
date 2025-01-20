@@ -34,6 +34,7 @@ class RecipientProfile {
         // Search events
         this.searchInput.addEventListener('input', () => this.handleSearch());
         this.addGiftModal.addEventListener('hidden.bs.modal', () => this.handleSearchModalHidden());
+        this.addGiftModal.addEventListener('shown.bs.modal', () => this.loadRecentGifts());
         
         // View toggling
         this.gridViewBtn.addEventListener('click', () => this.toggleView('grid'));
