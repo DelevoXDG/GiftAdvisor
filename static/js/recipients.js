@@ -16,7 +16,18 @@ class Recipients {
         // State
         this.isSubmitting = false;
         
+        // Elements
+        this.searchInput = document.getElementById('recipientSearch');
+        this.gridViewBtn = document.getElementById('gridViewBtn');
+        this.listViewBtn = document.getElementById('listViewBtn');
+        this.giftGrid = document.querySelector('.gift-grid');
+        this.giftList = document.querySelector('.gift-list');
+        
+        // State
+        this.searchTimeout = null;
+        
         this.initializeEventListeners();
+        this.restoreLayoutPreference();
     }
 
     initializeEventListeners() {
@@ -33,6 +44,13 @@ class Recipients {
         document.querySelectorAll('[data-recipient-id]').forEach(button => {
             button.addEventListener('click', (e) => this.handleEditClick(e));
         });
+        
+        // Search
+        this.searchInput.addEventListener('input', () => this.handleSearch());
+        
+        // View toggling
+        this.gridViewBtn.addEventListener('click', () => this.toggleView('grid'));
+        this.listViewBtn.addEventListener('click', () => this.toggleView('list'));
     }
 
     async handleAddRecipient(e) {
@@ -187,6 +205,56 @@ class Recipients {
     handleModalHidden(form) {
         form.reset();
         this.isSubmitting = false;
+    }
+
+    handleSearch() {
+        clearTimeout(this.searchTimeout);
+        this.searchTimeout = setTimeout(() => this.performSearch(), 300);
+    }
+
+    performSearch() {
+        const query = this.searchInput.value.toLowerCase().trim();
+        const recipients = document.querySelectorAll('.gift-grid > a, .gift-list > a');
+        
+        recipients.forEach(recipient => {
+            const name = recipient.querySelector('h5').textContent.toLowerCase();
+            const relationship = recipient.querySelector('.badge').textContent.toLowerCase();
+            const notes = recipient.querySelector('p.text-muted')?.textContent.toLowerCase() || '';
+            const interests = Array.from(recipient.querySelectorAll('.badge.bg-secondary'))
+                .map(badge => badge.textContent.toLowerCase());
+            
+            const matches = name.includes(query) || 
+                           relationship.includes(query) || 
+                           notes.includes(query) ||
+                           interests.some(interest => interest.includes(query));
+            
+            recipient.style.display = matches ? '' : 'none';
+        });
+    }
+
+    restoreLayoutPreference() {
+        const savedLayout = localStorage.getItem('recipientLayoutPreference');
+        if (savedLayout) {
+            this.toggleView(savedLayout, false);
+        }
+    }
+
+    toggleView(type, savePreference = true) {
+        if (type === 'grid') {
+            this.gridViewBtn.classList.add('active');
+            this.listViewBtn.classList.remove('active');
+            this.giftGrid.classList.remove('d-none');
+            this.giftList.classList.add('d-none');
+        } else {
+            this.listViewBtn.classList.add('active');
+            this.gridViewBtn.classList.remove('active');
+            this.giftList.classList.remove('d-none');
+            this.giftGrid.classList.add('d-none');
+        }
+        
+        if (savePreference) {
+            localStorage.setItem('recipientLayoutPreference', type);
+        }
     }
 }
 

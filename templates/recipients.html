@@ -27,71 +27,121 @@
 
     <!-- Main Content -->
     <div class="main-content">
-        <div class="container-fluid py-4">
+        <div class="container py-4">
             <div class="d-flex justify-content-between align-items-center mb-4">
                 <h2 class="fw-bold">Recipients</h2>
-                <button class="btn btn-primary d-flex align-items-center gap-2" data-bs-toggle="modal" data-bs-target="#addRecipientModal">
-                    <i class="bi bi-plus-lg"></i>
-                    <span>Add Recipient</span>
-                </button>
+                <div class="d-flex gap-3">
+                    <div class="btn-group" role="group">
+                        <button type="button" class="btn btn-outline-primary active px-3" id="gridViewBtn">
+                            <i class="bi bi-grid"></i>
+                        </button>
+                        <button type="button" class="btn btn-outline-primary px-3" id="listViewBtn">
+                            <i class="bi bi-list-ul"></i>
+                        </button>
+                    </div>
+                    <button class="btn btn-primary d-flex align-items-center gap-2" data-bs-toggle="modal" data-bs-target="#addRecipientModal">
+                        <i class="bi bi-plus-lg"></i>
+                        <span>Add Recipient</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Search Bar -->
+            <div class="mb-4">
+                <div class="modern-input-wrapper">
+                    <i class="bi bi-search input-icon"></i>
+                    <input type="text" 
+                           class="modern-input" 
+                           id="recipientSearch"
+                           placeholder="Search recipients..."
+                           autocomplete="off"
+                           spellcheck="false">
+                </div>
             </div>
 
             {% if recipients %}
-                <div class="row g-4">
+                <!-- Grid View -->
+                <div class="gift-grid">
                     {% for recipient in recipients %}
-                        <div class="col-md-6 col-lg-4">
-                            <a href="{% url 'recipient_profile' recipient.id %}" class="text-decoration-none">
-                                <div class="card h-100 recipient-card">
-                                    <div class="card-body">
-                                        <div class="d-flex justify-content-between align-items-start mb-3">
+                        <a href="{% url 'recipient_profile' recipient.id %}" class="text-decoration-none">
+                            <div class="card h-100 recipient-card">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between align-items-start mb-3">
+                                        <div class="d-flex align-items-center gap-2">
+                                            <i class="bi bi-person-circle text-muted"></i>
                                             <h5 class="card-title fw-bold mb-0">{{ recipient.name }}</h5>
-                                            <span class="badge bg-primary">{{ recipient.get_relationship_display }}</span>
                                         </div>
-                                        
-                                        {% if recipient.birth_date %}
-                                            <p class="text-muted mb-3">
-                                                <i class="bi bi-calendar-event me-2"></i>
-                                                {{ recipient.birth_date|date:"F j, Y" }}
-                                            </p>
-                                        {% endif %}
-                                        
-                                        {% if recipient.interests.all %}
-                                            <div class="mb-3">
-                                                <h6 class="fw-bold mb-2">Interests</h6>
-                                                <div class="d-flex flex-wrap gap-2">
-                                                    {% for interest in recipient.interests.all %}
-                                                        <span class="badge bg-secondary">{{ interest.name }}</span>
-                                                    {% endfor %}
-                                                </div>
-                                            </div>
-                                        {% endif %}
-                                        
-                                        {% if recipient.notes %}
-                                            <div class="mb-3">
-                                                <h6 class="fw-bold mb-2">Notes</h6>
-                                                <p class="text-muted mb-0">{{ recipient.notes|truncatechars:100 }}</p>
-                                            </div>
-                                        {% endif %}
-                                        
-                                        <div class="mt-3">
-                                            <h6 class="fw-bold mb-2">Gift Ideas</h6>
-                                            <p class="text-muted mb-0">
-                                                {{ recipient.gift_ideas.count }} gift ideas saved
-                                            </p>
-                                        </div>
+                                        <span class="badge bg-primary ms-2">{{ recipient.get_relationship_display }}</span>
                                     </div>
-                                    <div class="card-footer bg-transparent border-top-0">
-                                        <button class="btn btn-outline-primary w-100" 
-                                                data-recipient-id="{{ recipient.id }}"
-                                                data-bs-toggle="modal" 
-                                                data-bs-target="#editRecipientModal"
-                                                onclick="event.stopPropagation()">
-                                            Edit Details
-                                        </button>
+                                    
+                                    {% if recipient.birth_date %}
+                                        <p class="text-muted mb-3">
+                                            <i class="bi bi-calendar-event me-2"></i>
+                                            {{ recipient.birth_date|date:"F j, Y" }}
+                                        </p>
+                                    {% endif %}
+                                    
+                                    {% if recipient.interests.all %}
+                                        <div class="mb-3">
+                                            <div class="d-flex flex-wrap gap-2">
+                                                {% for interest in recipient.interests.all %}
+                                                    <span class="badge bg-secondary">{{ interest.name }}</span>
+                                                {% endfor %}
+                                            </div>
+                                        </div>
+                                    {% endif %}
+                                    
+                                    {% if recipient.notes %}
+                                        <div class="mb-3">
+                                            <p class="text-muted mb-0">{{ recipient.notes|truncatechars:100 }}</p>
+                                        </div>
+                                    {% endif %}
+                                    
+                                    <div class="mt-3">
+                                        <p class="text-primary mb-0">
+                                            {{ recipient.gift_ideas.count }} gift ideas saved
+                                        </p>
                                     </div>
                                 </div>
-                            </a>
-                        </div>
+                            </div>
+                        </a>
+                    {% endfor %}
+                </div>
+
+                <!-- List View -->
+                <div class="gift-list d-none">
+                    {% for recipient in recipients %}
+                        <a href="{% url 'recipient_profile' recipient.id %}" class="text-decoration-none">
+                            <div class="gift-item shadow-sm clickable">
+                                <div class="d-flex align-items-center gap-3">
+                                    <i class="bi bi-person-circle text-muted" style="font-size: 2rem;"></i>
+                                    <div class="flex-grow-1">
+                                        <div class="d-flex justify-content-between align-items-start">
+                                            <div>
+                                                <h5 class="mb-1">{{ recipient.name }}</h5>
+                                                {% if recipient.notes %}
+                                                    <p class="text-muted mb-0">{{ recipient.notes|truncatechars:60 }}</p>
+                                                {% endif %}
+                                            </div>
+                                            <div class="d-flex flex-column align-items-end">
+                                                <span class="badge bg-primary ms-3">{{ recipient.get_relationship_display }}</span>
+                                                <small class="text-primary mt-2">{{ recipient.gift_ideas.count }} gifts</small>
+                                            </div>
+                                        </div>
+                                        {% if recipient.interests.all %}
+                                            <div class="mt-2">
+                                                {% for interest in recipient.interests.all|slice:":3" %}
+                                                    <span class="badge bg-secondary me-1">{{ interest.name }}</span>
+                                                {% endfor %}
+                                                {% if recipient.interests.count > 3 %}
+                                                    <span class="badge bg-secondary">+{{ recipient.interests.count|add:"-3" }}</span>
+                                                {% endif %}
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </a>
                     {% endfor %}
                 </div>
             {% else %}
