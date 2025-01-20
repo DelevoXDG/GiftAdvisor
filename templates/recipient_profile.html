@@ -34,32 +34,29 @@
                 <span>Back to Recipients</span>
             </a>
 
-            <!-- Profile Header -->
-            <div class="card mb-5">
+            <!-- Profile Section -->
+            <div class="card rounded-4 border-0 shadow mb-4">
                 <div class="card-body p-4">
-                    <div class="d-flex gap-4">
-                        <div class="profile-avatar">
-                            <i class="bi bi-person-circle"></i>
-                        </div>
-                        <div class="flex-grow-1">
-                            <div class="d-flex justify-content-between align-items-start mb-3">
-                                <div>
-                                    <h1 class="fw-bold mb-2">{{ recipient.name }}</h1>
-                                    <p class="text-muted mb-3">{{ recipient.get_relationship_display }}</p>
-                                </div>
-                                <button class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#editRecipientModal">
-                                    <i class="bi bi-pencil me-2"></i>
-                                    Edit Details
-                                </button>
+                    <div class="d-flex justify-content-between align-items-start mb-4">
+                        <div class="d-flex align-items-center gap-3">
+                            <i class="bi bi-person-circle text-muted" style="font-size: 3rem;"></i>
+                            <div>
+                                <h2 class="fw-bold mb-1">{{ recipient.name }}</h2>
+                                <span class="badge bg-primary">{{ recipient.get_relationship_display }}</span>
                             </div>
-                            
+                        </div>
+                        <button class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#editRecipientModal">
+                            <i class="bi bi-pencil me-2"></i>
+                            Edit Details
+                        </button>
+                    </div>
+
+                    {% if recipient.birth_date or recipient.interests.all or recipient.notes %}
+                        <div class="profile-details">
                             {% if recipient.birth_date %}
                                 <div class="mb-3">
                                     <h6 class="fw-bold mb-2">Birthday</h6>
-                                    <p class="text-muted mb-0">
-                                        <i class="bi bi-calendar-event me-2"></i>
-                                        {{ recipient.birth_date|date:"F j, Y" }}
-                                    </p>
+                                    <p class="mb-0">{{ recipient.birth_date|date:"d.m.Y" }}</p>
                                 </div>
                             {% endif %}
 
@@ -77,16 +74,16 @@
                             {% if recipient.notes %}
                                 <div>
                                     <h6 class="fw-bold mb-2">Notes</h6>
-                                    <p class="text-muted mb-0">{{ recipient.notes }}</p>
+                                    <p class="mb-0">{{ recipient.notes }}</p>
                                 </div>
                             {% endif %}
                         </div>
-                    </div>
+                    {% endif %}
                 </div>
             </div>
 
             <!-- Gift Ideas Section -->
-            <div class="card">
+            <div class="card rounded-4 border-0 shadow">
                 <div class="card-body p-4">
                     <div class="d-flex justify-content-between align-items-center mb-4">
                         <h2 class="fw-bold">Gift Ideas</h2>
@@ -101,7 +98,7 @@
                             </div>
                             <button class="btn btn-primary d-flex align-items-center gap-2" data-bs-toggle="modal" data-bs-target="#addGiftModal">
                                 <i class="bi bi-plus-lg"></i>
-                                <span>Add Gift Idea</span>
+                                <span>Add Gift</span>
                             </button>
                         </div>
                     </div>
@@ -169,11 +166,9 @@
                         </div>
                     {% else %}
                         <div class="text-center py-5">
-                            <div class="text-center">
-                                <i class="bi bi-gift-fill mb-4" style="font-size: 3.5rem; opacity: 0.5;"></i>
-                                <h4 class="fw-bold">No gift ideas yet</h4>
-                                <p class="text-muted">Add some gift ideas for {{ recipient.name }}.</p>
-                            </div>
+                            <i class="bi bi-gift mb-4" style="font-size: 3.5rem; opacity: 0.5;"></i>
+                            <h4 class="fw-bold">No gift ideas yet</h4>
+                            <p class="text-muted">Add your first gift idea for {{ recipient.name }}.</p>
                         </div>
                     {% endif %}
                 </div>
@@ -182,36 +177,8 @@
     </div>
 </div>
 
-<!-- Add Gift Modal -->
-<div class="modal fade" id="addGiftModal" tabindex="-1" data-bs-backdrop="static">
-    <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Add Gift Idea for {{ recipient.name }}</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body">
-                <div class="search-container mb-4">
-                    <div class="modern-input-wrapper">
-                        <i class="bi bi-search input-icon"></i>
-                        <input type="text" 
-                               class="modern-input" 
-                               id="giftSearch"
-                               placeholder="Search gift ideas..."
-                               autocomplete="off"
-                               spellcheck="false">
-                    </div>
-                </div>
-                <div id="searchResults" class="gift-grid">
-                    <!-- Gift ideas will be loaded here -->
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-
 <!-- Edit Recipient Modal -->
-<div class="modal fade" id="editRecipientModal" tabindex="-1">
+<div class="modal fade" id="editRecipientModal" tabindex="-1" data-bs-backdrop="static">
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
@@ -258,6 +225,34 @@
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
                 <button type="button" class="btn btn-primary" id="saveRecipientBtn">Save Changes</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Add Gift Modal -->
+<div class="modal fade" id="addGiftModal" tabindex="-1" data-bs-backdrop="static">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Add Gift Idea for {{ recipient.name }}</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="search-container mb-4">
+                    <div class="modern-input-wrapper">
+                        <i class="bi bi-search input-icon"></i>
+                        <input type="text" 
+                               class="modern-input" 
+                               id="giftSearch"
+                               placeholder="Search gift ideas..."
+                               autocomplete="off"
+                               spellcheck="false">
+                    </div>
+                </div>
+                <div id="searchResults" class="gift-grid">
+                    <!-- Gift ideas will be loaded here -->
+                </div>
             </div>
         </div>
     </div>
