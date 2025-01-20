@@ -40,54 +40,57 @@
                 <div class="row g-4">
                     {% for recipient in recipients %}
                         <div class="col-md-6 col-lg-4">
-                            <div class="card h-100 recipient-card">
-                                <div class="card-body">
-                                    <div class="d-flex justify-content-between align-items-start mb-3">
-                                        <h5 class="card-title fw-bold mb-0">{{ recipient.name }}</h5>
-                                        <span class="badge bg-primary">{{ recipient.get_relationship_display }}</span>
-                                    </div>
-                                    
-                                    {% if recipient.birth_date %}
-                                        <p class="text-muted mb-3">
-                                            <i class="bi bi-calendar-event me-2"></i>
-                                            {{ recipient.birth_date|date:"F j, Y" }}
-                                        </p>
-                                    {% endif %}
-                                    
-                                    {% if recipient.interests.all %}
-                                        <div class="mb-3">
-                                            <h6 class="fw-bold mb-2">Interests</h6>
-                                            <div class="d-flex flex-wrap gap-2">
-                                                {% for interest in recipient.interests.all %}
-                                                    <span class="badge bg-secondary">{{ interest.name }}</span>
-                                                {% endfor %}
+                            <a href="{% url 'recipient_profile' recipient.id %}" class="text-decoration-none">
+                                <div class="card h-100 recipient-card">
+                                    <div class="card-body">
+                                        <div class="d-flex justify-content-between align-items-start mb-3">
+                                            <h5 class="card-title fw-bold mb-0">{{ recipient.name }}</h5>
+                                            <span class="badge bg-primary">{{ recipient.get_relationship_display }}</span>
+                                        </div>
+                                        
+                                        {% if recipient.birth_date %}
+                                            <p class="text-muted mb-3">
+                                                <i class="bi bi-calendar-event me-2"></i>
+                                                {{ recipient.birth_date|date:"F j, Y" }}
+                                            </p>
+                                        {% endif %}
+                                        
+                                        {% if recipient.interests.all %}
+                                            <div class="mb-3">
+                                                <h6 class="fw-bold mb-2">Interests</h6>
+                                                <div class="d-flex flex-wrap gap-2">
+                                                    {% for interest in recipient.interests.all %}
+                                                        <span class="badge bg-secondary">{{ interest.name }}</span>
+                                                    {% endfor %}
+                                                </div>
                                             </div>
+                                        {% endif %}
+                                        
+                                        {% if recipient.notes %}
+                                            <div class="mb-3">
+                                                <h6 class="fw-bold mb-2">Notes</h6>
+                                                <p class="text-muted mb-0">{{ recipient.notes|truncatechars:100 }}</p>
+                                            </div>
+                                        {% endif %}
+                                        
+                                        <div class="mt-3">
+                                            <h6 class="fw-bold mb-2">Gift Ideas</h6>
+                                            <p class="text-muted mb-0">
+                                                {{ recipient.gift_ideas.count }} gift ideas saved
+                                            </p>
                                         </div>
-                                    {% endif %}
-                                    
-                                    {% if recipient.notes %}
-                                        <div class="mb-3">
-                                            <h6 class="fw-bold mb-2">Notes</h6>
-                                            <p class="text-muted mb-0">{{ recipient.notes|truncatechars:100 }}</p>
-                                        </div>
-                                    {% endif %}
-                                    
-                                    <div class="mt-3">
-                                        <h6 class="fw-bold mb-2">Gift Ideas</h6>
-                                        <p class="text-muted mb-0">
-                                            {{ recipient.gift_ideas.count }} gift ideas saved
-                                        </p>
+                                    </div>
+                                    <div class="card-footer bg-transparent border-top-0">
+                                        <button class="btn btn-outline-primary w-100" 
+                                                data-recipient-id="{{ recipient.id }}"
+                                                data-bs-toggle="modal" 
+                                                data-bs-target="#editRecipientModal"
+                                                onclick="event.stopPropagation()">
+                                            Edit Details
+                                        </button>
                                     </div>
                                 </div>
-                                <div class="card-footer bg-transparent border-top-0">
-                                    <button class="btn btn-outline-primary w-100" 
-                                            data-recipient-id="{{ recipient.id }}"
-                                            data-bs-toggle="modal" 
-                                            data-bs-target="#editRecipientModal">
-                                        Edit Details
-                                    </button>
-                                </div>
-                            </div>
+                            </a>
                         </div>
                     {% endfor %}
                 </div>

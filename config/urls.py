@@ -22,16 +22,26 @@ from core.views import (
     add_gift,
     RecipientsView,
     recipients_list,
-    recipient_detail
+    recipient_detail,
+    RecipientProfileView,
+    search_gifts,
+    recent_gifts,
+    add_gift_to_recipient
 )
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', IndexView.as_view(), name='index'),
     path('recipients/', RecipientsView.as_view(), name='recipients'),
+    path('recipients/<int:recipient_id>/', RecipientProfileView.as_view(), name='recipient_profile'),
     path('accounts/', include('allauth.urls')),
+    
+    # API endpoints
     path('api/extract-metadata/', extract_metadata, name='extract_metadata'),
     path('api/gifts/', add_gift, name='add_gift'),
+    path('api/gifts/search/', search_gifts, name='search_gifts'),
+    path('api/gifts/recent/', recent_gifts, name='recent_gifts'),
     path('api/recipients/', recipients_list, name='recipients_list'),
     path('api/recipients/<int:recipient_id>/', recipient_detail, name='recipient_detail'),
+    path('api/recipients/<int:recipient_id>/gifts/', add_gift_to_recipient, name='add_gift_to_recipient'),
 ]

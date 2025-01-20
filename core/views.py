@@ -9,6 +9,7 @@ from .services.metadata_extractor import MetadataExtractor
 from django.views.decorators.http import require_http_methods
 from django.shortcuts import get_object_or_404
 import json
+from django.db.models import Q
 
 User = get_user_model()
 
@@ -224,6 +225,83 @@ def add_gift(request):
         return JsonResponse({
             'message': 'Gift idea added successfully',
             'id': gift.id
+        })
+        
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=400)
+
+class RecipientProfileView(LoginRequiredMixin, TemplateView):
+    template_name = 'recipient_profile.html'
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        recipient_id = kwargs.get('recipient_id')
+        recipient = get_object_or_404(Recipient, id=recipient_id, user=self.request.user)
+        
+        context.update({
+            'recipient': recipient,
+            'gifts': recipient.gift_ideas.all().order_by('-created_at'),
+            'tags': Tag.objects.all().order_by('name'),
+            'relationship_choices': Recipient.RELATIONSHIP_CHOICES,
+        })
+        
+        return context
+
+@require_http_methods(["GET"])
+def search_gifts(request):
+    """Search through all gift ideas."""
+    query = request.GET.get('q', '')
+    user = request.user
+    
+    gifts = GiftIdea.objects.filter(user=user)
+    
+    if query:
+        gifts = gifts.filter(
+            Q(title__icontains=query) |
+            Q(description__icontains=query) |
+            Q(tags__name__icontains=query)
+        ).distinct()
+    
+    gifts = gifts.order_by('-created_at')[:20]  # Limit to 20 most recent matches
+    
+    return JsonResponse([{
+        'id': gift.id,
+        'title': gift.title,
+        'description': gift.description,
+        'price': float(gift.price) if gift.price else None,
+        'image_url': gift.image_url,
+        'tags': [{'id': tag.id, 'name': tag.name} for tag in gift.tags.all()]
+    } for gift in gifts], safe=False)
+
+@require_http_methods(["GET"])
+def recent_gifts(request):
+    """Get recent gift ideas."""
+    user = request.user
+    gifts = GiftIdea.objects.filter(user=user).order_by('-created_at')[:12]  # Last 12 gifts
+    
+    return JsonResponse([{
+        'id': gift.id,
+        'title': gift.title,
+        'description': gift.description,
+        'price': float(gift.price) if gift.price else None,
+        'image_url': gift.image_url,
+        'tags': [{'id': tag.id, 'name': tag.name} for tag in gift.tags.all()]
+    } for gift in gifts], safe=False)
+
+@require_http_methods(["POST"])
+def add_gift_to_recipient(request, recipient_id):
+    """Add an existing gift idea to a recipient."""
+    try:
+        data = json.loads(request.body)
+        gift_id = data.get('gift_id')
+        
+        recipient = get_object_or_404(Recipient, id=recipient_id, user=request.user)
+        gift = get_object_or_404(GiftIdea, id=gift_id, user=request.user)
+        
+        recipient.gift_ideas.add(gift)
+        
+        return JsonResponse({
+            'message': 'Gift added successfully'
         })
         
     except Exception as e:
