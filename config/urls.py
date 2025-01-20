@@ -16,12 +16,22 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
-from core.views import IndexView, extract_metadata, add_gift
+from core.views import (
+    IndexView, 
+    extract_metadata, 
+    add_gift,
+    RecipientsView,
+    recipients_list,
+    recipient_detail
+)
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', IndexView.as_view(), name='index'),
+    path('recipients/', RecipientsView.as_view(), name='recipients'),
     path('accounts/', include('allauth.urls')),
     path('api/extract-metadata/', extract_metadata, name='extract_metadata'),
     path('api/gifts/', add_gift, name='add_gift'),
+    path('api/recipients/', recipients_list, name='recipients_list'),
+    path('api/recipients/<int:recipient_id>/', recipient_detail, name='recipient_detail'),
 ]

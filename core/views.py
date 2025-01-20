@@ -7,6 +7,7 @@ from django.contrib.auth import get_user_model
 from django.http import JsonResponse
 from .services.metadata_extractor import MetadataExtractor
 from django.views.decorators.http import require_http_methods
+from django.shortcuts import get_object_or_404
 import json
 
 User = get_user_model()
@@ -26,7 +27,7 @@ class IndexView(TemplateView):
             gifts = GiftIdea.objects.filter(user=user)
             
             if not gifts.exists():
-                # Try to find the test user's gifts
+                # Try to find the test user's gifts
                 test_user = User.objects.filter(email='test@example.com').first()
                 if test_user:
                     gifts = GiftIdea.objects.filter(user=test_user)
@@ -79,6 +80,98 @@ class IndexView(TemplateView):
             })
             
         return context
+
+class RecipientsView(LoginRequiredMixin, TemplateView):
+    template_name = 'recipients.html'
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        user = self.request.user
+        
+        context.update({
+            'recipients': Recipient.objects.filter(user=user).order_by('name'),
+            'tags': Tag.objects.all().order_by('name'),
+            'relationship_choices': Recipient.RELATIONSHIP_CHOICES,
+        })
+        
+        return context
+
+@require_http_methods(["GET", "POST"])
+def recipients_list(request):
+    """Handle recipient listing and creation."""
+    if request.method == "GET":
+        recipients = Recipient.objects.filter(user=request.user)
+        return JsonResponse([{
+            'id': r.id,
+            'name': r.name,
+            'relationship': r.relationship,
+            'birth_date': r.birth_date.isoformat() if r.birth_date else None,
+            'interests': list(r.interests.values_list('id', flat=True)),
+            'notes': r.notes,
+            'gift_count': r.gift_ideas.count()
+        } for r in recipients], safe=False)
+    
+    elif request.method == "POST":
+        try:
+            data = json.loads(request.body)
+            recipient = Recipient.objects.create(
+                user=request.user,
+                name=data['name'],
+                relationship=data['relationship'],
+                birth_date=data.get('birth_date'),
+                notes=data.get('notes', '')
+            )
+            
+            if 'interests' in data:
+                recipient.interests.set(data['interests'])
+            
+            return JsonResponse({
+                'message': 'Recipient added successfully',
+                'id': recipient.id
+            })
+            
+        except Exception as e:
+            return JsonResponse({'error': str(e)}, status=400)
+
+@require_http_methods(["GET", "PUT", "DELETE"])
+def recipient_detail(request, recipient_id):
+    """Handle individual recipient operations."""
+    recipient = get_object_or_404(Recipient, id=recipient_id, user=request.user)
+    
+    if request.method == "GET":
+        return JsonResponse({
+            'id': recipient.id,
+            'name': recipient.name,
+            'relationship': recipient.relationship,
+            'birth_date': recipient.birth_date.isoformat() if recipient.birth_date else None,
+            'interests': list(recipient.interests.values_list('id', flat=True)),
+            'notes': recipient.notes
+        })
+    
+    elif request.method == "PUT":
+        try:
+            data = json.loads(request.body)
+            
+            recipient.name = data['name']
+            recipient.relationship = data['relationship']
+            recipient.birth_date = data.get('birth_date')
+            recipient.notes = data.get('notes', '')
+            recipient.save()
+            
+            if 'interests' in data:
+                recipient.interests.set(data['interests'])
+            
+            return JsonResponse({'message': 'Recipient updated successfully'})
+            
+        except Exception as e:
+            return JsonResponse({'error': str(e)}, status=400)
+    
+    elif request.method == "DELETE":
+        try:
+            recipient.delete()
+            return JsonResponse({'message': 'Recipient deleted successfully'})
+        except Exception as e:
+            return JsonResponse({'error': str(e)}, status=400)
 
 @require_http_methods(["POST"])
 def extract_metadata(request):
