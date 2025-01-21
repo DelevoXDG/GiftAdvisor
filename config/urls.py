@@ -28,7 +28,9 @@ from core.views import (
     recent_gifts,
     add_gift_to_recipient,
     gift_detail,
-    gift_detail_api
+    gift_detail_api,
+    PreferencesView,
+    update_openai_key
 )
 
 urlpatterns = [
@@ -37,6 +39,7 @@ urlpatterns = [
     path('recipients/', RecipientsView.as_view(), name='recipients'),
     path('recipients/<int:recipient_id>/', RecipientProfileView.as_view(), name='recipient_profile'),
     path('gifts/<int:gift_id>/', gift_detail, name='gift_detail'),
+    path('preferences/', PreferencesView.as_view(), name='preferences'),
     path('accounts/', include('allauth.urls')),
     
     # API endpoints
@@ -48,4 +51,5 @@ urlpatterns = [
     path('api/recipients/', recipients_list, name='recipients_list'),
     path('api/recipients/<int:recipient_id>/', recipient_detail, name='recipient_detail'),
     path('api/recipients/<int:recipient_id>/gifts/', add_gift_to_recipient, name='add_gift_to_recipient'),
+    path('api/preferences/openai-key/', update_openai_key, name='update_openai_key'),
 ]

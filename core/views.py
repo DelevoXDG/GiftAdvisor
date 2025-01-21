@@ -1,15 +1,16 @@
 from django.shortcuts import render
 from django.views.generic import TemplateView
 from django.contrib.auth.mixins import LoginRequiredMixin
-from .models import GiftIdea, Tag, Recipient
+from .models import GiftIdea, Tag, Recipient, UserPreferences
 from django.db.models import Min, Max
 from django.contrib.auth import get_user_model
 from django.http import JsonResponse
 from .services.metadata_extractor import MetadataExtractor
-from django.views.decorators.http import require_http_methods
+from django.views.decorators.http import require_http_methods, require_POST
 from django.shortcuts import get_object_or_404
 import json
 from django.db.models import Q
+from django.contrib.auth.decorators import login_required
 
 User = get_user_model()
 
@@ -376,3 +377,43 @@ def gift_detail_api(request, gift_id):
             return JsonResponse({'message': 'Gift deleted successfully'})
         except Exception as e:
             return JsonResponse({'error': str(e)}, status=400)
+
+class PreferencesView(LoginRequiredMixin, TemplateView):
+    template_name = 'preferences.html'
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        try:
+            preferences = UserPreferences.objects.get(user=self.request.user)
+            context['has_openai_key'] = bool(preferences.openai_key)
+        except UserPreferences.DoesNotExist:
+            context['has_openai_key'] = False
+        return context
+
+@login_required
+@require_POST
+def update_openai_key(request):
+    try:
+        data = json.loads(request.body)
+        api_key = data.get('api_key')
+        
+        preferences, created = UserPreferences.objects.get_or_create(user=request.user)
+        
+        if api_key is None:
+            # Remove the key
+            preferences.openai_key = None
+            preferences.save()
+            return JsonResponse({'message': 'API key removed successfully'})
+        else:
+            # Validate and save the key
+            if not api_key.startswith('sk-'):
+                return JsonResponse({'error': 'Invalid API key format'}, status=400)
+            
+            preferences.openai_key = api_key
+            preferences.save()
+            return JsonResponse({'message': 'API key saved successfully'})
+            
+    except json.JSONDecodeError:
+        return JsonResponse({'error': 'Invalid JSON data'}, status=400)
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)

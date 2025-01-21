@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Tag, Occasion, Recipient, GiftIdea
+from .models import Tag, Occasion, Recipient, GiftIdea, UserPreferences
 
 @admin.register(Tag)
 class TagAdmin(admin.ModelAdmin):
@@ -25,3 +25,14 @@ class GiftIdeaAdmin(admin.ModelAdmin):
     list_filter = ('status', 'user', 'tags')
     search_fields = ('title', 'description')
     filter_horizontal = ('recipients', 'occasions', 'tags')
+
+@admin.register(UserPreferences)
+class UserPreferencesAdmin(admin.ModelAdmin):
+    list_display = ('user', 'has_openai_key', 'created_at', 'updated_at')
+    list_filter = ('user',)
+    search_fields = ('user__email', 'user__username')
+    
+    def has_openai_key(self, obj):
+        return bool(obj.openai_key)
+    has_openai_key.boolean = True
+    has_openai_key.short_description = 'Has OpenAI Key'

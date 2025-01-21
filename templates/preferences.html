@@ -1,0 +1,173 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="d-flex">
+    <!-- Left Sidebar -->
+    <div class="sidebar mt-4">
+        <div class="mb-5">
+            <h5 class="text-muted mb-3">Sections</h5>
+            <a href="{% url 'index' %}" class="sidebar-link">
+                <i class="bi bi-gift"></i>
+                <span>Gift Ideas</span>
+            </a>
+            <a href="{% url 'recipients' %}" class="sidebar-link">
+                <i class="bi bi-people"></i>
+                <span>Recipients</span>
+            </a>
+        </div>
+        <div>
+            <h5 class="text-muted mb-3">Settings</h5>
+            <a href="{% url 'preferences' %}" class="sidebar-link active">
+                <i class="bi bi-gear"></i>
+                <span>Preferences</span>
+            </a>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <div class="container py-4">
+            <div class="card rounded-4 border-0 shadow mb-4">
+                <div class="card-body p-4">
+                    <h2 class="fw-bold mb-4" style="font-size: 1.75rem;">API Keys</h2>
+                    
+                    <!-- OpenAI API Key Section -->
+                    <div class="mb-4">
+                        <div class="d-flex justify-content-between align-items-start mb-3">
+                            <div>
+                                <h3 class="fw-bold mb-2" style="font-size: 1.25rem;">OpenAI API Key</h3>
+                                <p class="text-muted mb-0" style="font-size: 0.95rem;">
+                                    Add your OpenAI API key to enable AI-powered features like auto-tagging and gift suggestions.
+                                </p>
+                            </div>
+                            {% if has_openai_key %}
+                                <span class="badge bg-success">Connected</span>
+                            {% else %}
+                                <span class="badge bg-secondary">Not Connected</span>
+                            {% endif %}
+                        </div>
+
+                        <div class="api-key-form">
+                            <div class="modern-input-wrapper mb-3">
+                                <i class="bi bi-key input-icon"></i>
+                                <input type="text" 
+                                       id="openaiKey" 
+                                       class="modern-input" 
+                                       placeholder="sk-..." 
+                                       autocomplete="off"
+                                       spellcheck="false">
+                            </div>
+                            <div class="d-flex gap-2">
+                                <button type="button" class="btn btn-primary" id="saveKeyBtn">
+                                    {% if has_openai_key %}Update Key{% else %}Save Key{% endif %}
+                                </button>
+                                {% if has_openai_key %}
+                                    <button type="button" class="btn btn-outline-danger" id="removeKeyBtn">Remove Key</button>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="alert alert-info" role="alert">
+                        <h4 class="alert-heading mb-2" style="font-size: 1.1rem;">
+                            <i class="bi bi-info-circle me-2"></i>
+                            About API Keys
+                        </h4>
+                        <p class="mb-0" style="font-size: 0.95rem;">
+                            Your API key is encrypted before being stored and can only be decrypted with your account credentials.
+                            We never share your API keys with third parties.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% block extra_js %}
+<script>
+class Preferences {
+    constructor() {
+        this.keyInput = document.getElementById('openaiKey');
+        this.saveKeyBtn = document.getElementById('saveKeyBtn');
+        this.removeKeyBtn = document.getElementById('removeKeyBtn');
+        
+        this.initializeEventListeners();
+    }
+
+    initializeEventListeners() {
+        this.saveKeyBtn.addEventListener('click', () => this.handleSaveKey());
+        if (this.removeKeyBtn) {
+            this.removeKeyBtn.addEventListener('click', () => this.handleRemoveKey());
+        }
+    }
+
+    async handleSaveKey() {
+        const apiKey = this.keyInput.value.trim();
+        if (!apiKey) {
+            alert('Please enter an API key');
+            return;
+        }
+        
+        if (!apiKey.startsWith('sk-')) {
+            alert('Invalid API key format. OpenAI API keys should start with "sk-"');
+            return;
+        }
+        
+        try {
+            const response = await fetch('/api/preferences/openai-key/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                },
+                body: JSON.stringify({ api_key: apiKey })
+            });
+            
+            const data = await response.json();
+            if (response.ok) {
+                window.location.reload();
+            } else {
+                alert(data.error || 'Failed to save API key');
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            alert('Failed to save API key');
+        }
+    }
+
+    async handleRemoveKey() {
+        if (!confirm('Are you sure you want to remove your OpenAI API key?')) {
+            return;
+        }
+        
+        try {
+            const response = await fetch('/api/preferences/openai-key/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                },
+                body: JSON.stringify({ api_key: null })
+            });
+            
+            const data = await response.json();
+            if (response.ok) {
+                window.location.reload();
+            } else {
+                alert(data.error || 'Failed to remove API key');
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            alert('Failed to remove API key');
+        }
+    }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    new Preferences();
+});
+</script>
+{% endblock %}
+{% endblock %} 

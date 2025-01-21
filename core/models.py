@@ -1,5 +1,6 @@
 from django.db import models
 from django.conf import settings
+from django.core.exceptions import ValidationError
 
 class Tag(models.Model):
     """Model for categorizing gifts and recipients."""
@@ -62,3 +63,13 @@ class GiftIdea(models.Model):
     
     def __str__(self):
         return self.title
+
+class UserPreferences(models.Model):
+    """Model for storing user preferences including API keys."""
+    user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    openai_key = models.CharField(max_length=100, null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    def __str__(self):
+        return f"Preferences for {self.user.email}"
