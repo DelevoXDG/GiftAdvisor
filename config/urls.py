@@ -27,7 +27,8 @@ from core.views import (
     search_gifts,
     recent_gifts,
     add_gift_to_recipient,
-    gift_detail
+    gift_detail,
+    gift_detail_api
 )
 
 urlpatterns = [
@@ -43,6 +44,7 @@ urlpatterns = [
     path('api/gifts/', add_gift, name='add_gift'),
     path('api/gifts/search/', search_gifts, name='search_gifts'),
     path('api/gifts/recent/', recent_gifts, name='recent_gifts'),
+    path('api/gifts/<int:gift_id>/', gift_detail_api, name='gift_detail_api'),
     path('api/recipients/', recipients_list, name='recipients_list'),
     path('api/recipients/<int:recipient_id>/', recipient_detail, name='recipient_detail'),
     path('api/recipients/<int:recipient_id>/gifts/', add_gift_to_recipient, name='add_gift_to_recipient'),

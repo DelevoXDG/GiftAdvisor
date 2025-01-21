@@ -326,3 +326,53 @@ def gift_detail(request, gift_id):
     }
     
     return render(request, 'gift_detail.html', context)
+
+@require_http_methods(["GET", "PUT", "DELETE"])
+def gift_detail_api(request, gift_id):
+    """Handle individual gift operations."""
+    gift = get_object_or_404(GiftIdea, id=gift_id, user=request.user)
+    
+    if request.method == "GET":
+        return JsonResponse({
+            'id': gift.id,
+            'title': gift.title,
+            'description': gift.description,
+            'price': float(gift.price) if gift.price else None,
+            'url': gift.url,
+            'image_url': gift.image_url,
+            'status': gift.status,
+            'notes': gift.notes,
+            'tags': list(gift.tags.values_list('id', flat=True)),
+            'recipients': list(gift.recipients.values_list('id', flat=True))
+        })
+    
+    elif request.method == "PUT":
+        try:
+            data = json.loads(request.body)
+            
+            gift.title = data['title']
+            gift.price = data['price']
+            gift.status = data['status']
+            gift.url = data.get('url', '')
+            gift.image_url = data.get('image_url', '')
+            gift.description = data.get('description', '')
+            gift.notes = data.get('notes', '')
+            gift.save()
+            
+            if 'tags' in data:
+                gift.tags.set(data['tags'])
+            
+            if 'recipients' in data:
+                gift.recipients.set(data['recipients'])
+            
+            return JsonResponse({'message': 'Gift updated successfully'})
+            
+        except Exception as e:
+            return JsonResponse({'error': str(e)}, status=400)
+    
+    elif request.method == "DELETE":
+        try:
+            gift.delete()
+            return JsonResponse({'message': 'Gift deleted successfully'})
+        except Exception as e:
+            return JsonResponse({'error': str(e)}, status=400)
