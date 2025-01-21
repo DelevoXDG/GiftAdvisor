@@ -92,7 +92,7 @@
                         {% if has_openai_key %}
                             <div class="d-flex align-items-center mb-3 bg-light rounded-3 p-3">
                                 <i class="bi bi-key-fill text-success me-2"></i>
-                                <code class="flex-grow-1">{{ openai_key|slice:":4" }}...{{ openai_key|slice:"-4:" }}</code>
+                                <code class="flex-grow-1">{{ openai_key_display }}</code>
                                 <button type="button" class="btn btn-sm btn-outline-danger ms-2" id="removeOpenAIKeyBtn">
                                     <i class="bi bi-trash"></i>
                                 </button>
@@ -152,7 +152,7 @@
                         {% if has_deepseek_key %}
                             <div class="d-flex align-items-center mb-3 bg-light rounded-3 p-3">
                                 <i class="bi bi-key-fill text-success me-2"></i>
-                                <code class="flex-grow-1">{{ deepseek_key|slice:":4" }}...{{ deepseek_key|slice:"-4:" }}</code>
+                                <code class="flex-grow-1">{{ deepseek_key_display }}</code>
                                 <button type="button" class="btn btn-sm btn-outline-danger ms-2" id="removeDeepseekKeyBtn">
                                     <i class="bi bi-trash"></i>
                                 </button>
