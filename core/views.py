@@ -393,9 +393,9 @@ class PreferencesView(LoginRequiredMixin, TemplateView):
             
             # Pass the sliced API keys for display
             if preferences.openai_key:
-                context['openai_key_display'] = f"{preferences.openai_key[:8]}...{preferences.openai_key[-4:]}"
+                context['openai_key_display'] = f"{preferences.openai_key[:8]}•••••{preferences.openai_key[-4:]}"
             if preferences.deepseek_key:
-                context['deepseek_key_display'] = f"{preferences.deepseek_key[:8]}...{preferences.deepseek_key[-4:]}"
+                context['deepseek_key_display'] = f"{preferences.deepseek_key[:8]}•••••{preferences.deepseek_key[-4:]}"
                 
         except UserPreferences.DoesNotExist:
             context['has_openai_key'] = False
