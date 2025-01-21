@@ -32,7 +32,11 @@ from core.views import (
     PreferencesView,
     update_openai_key,
     update_deepseek_key,
-    update_current_model
+    update_current_model,
+    update_openai_model,
+    update_deepseek_model,
+    fetch_openai_models,
+    fetch_deepseek_models
 )
 
 urlpatterns = [
@@ -56,4 +60,8 @@ urlpatterns = [
     path('api/preferences/openai-key/', update_openai_key, name='update_openai_key'),
     path('api/preferences/deepseek-key/', update_deepseek_key, name='update_deepseek_key'),
     path('api/preferences/current-model/', update_current_model, name='update_current_model'),
+    path('api/preferences/openai-model/', update_openai_model, name='update_openai_model'),
+    path('api/preferences/deepseek-model/', update_deepseek_model, name='update_deepseek_model'),
+    path('api/preferences/openai-models/', fetch_openai_models, name='fetch_openai_models'),
+    path('api/preferences/deepseek-models/', fetch_deepseek_models, name='fetch_deepseek_models'),
 ]

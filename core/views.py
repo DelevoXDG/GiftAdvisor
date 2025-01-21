@@ -388,11 +388,57 @@ class PreferencesView(LoginRequiredMixin, TemplateView):
             context['has_openai_key'] = bool(preferences.openai_key)
             context['has_deepseek_key'] = bool(preferences.deepseek_key)
             context['current_ai_model'] = preferences.current_ai_model
+            context['openai_model'] = preferences.openai_model
+            context['deepseek_model'] = preferences.deepseek_model
         except UserPreferences.DoesNotExist:
             context['has_openai_key'] = False
             context['has_deepseek_key'] = False
             context['current_ai_model'] = 'none'
+            context['openai_model'] = 'gpt-3.5-turbo'
+            context['deepseek_model'] = 'deepseek-chat'
         return context
+
+@login_required
+@require_POST
+def update_openai_model(request):
+    try:
+        data = json.loads(request.body)
+        model = data.get('model')
+        
+        if not model:
+            return JsonResponse({'error': 'Model selection is required'}, status=400)
+            
+        preferences, created = UserPreferences.objects.get_or_create(user=request.user)
+        preferences.openai_model = model
+        preferences.save()
+        
+        return JsonResponse({'message': 'OpenAI model updated successfully'})
+            
+    except json.JSONDecodeError:
+        return JsonResponse({'error': 'Invalid JSON data'}, status=400)
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
+
+@login_required
+@require_POST
+def update_deepseek_model(request):
+    try:
+        data = json.loads(request.body)
+        model = data.get('model')
+        
+        if not model:
+            return JsonResponse({'error': 'Model selection is required'}, status=400)
+            
+        preferences, created = UserPreferences.objects.get_or_create(user=request.user)
+        preferences.deepseek_model = model
+        preferences.save()
+        
+        return JsonResponse({'message': 'Deepseek model updated successfully'})
+            
+    except json.JSONDecodeError:
+        return JsonResponse({'error': 'Invalid JSON data'}, status=400)
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
 
 @login_required
 @require_POST
@@ -468,5 +514,59 @@ def update_current_model(request):
             
     except json.JSONDecodeError:
         return JsonResponse({'error': 'Invalid JSON data'}, status=400)
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
+
+@login_required
+def fetch_openai_models(request):
+    try:
+        preferences = UserPreferences.objects.get(user=request.user)
+        if not preferences.openai_key:
+            return JsonResponse({'error': 'OpenAI API key not configured'}, status=400)
+            
+        from openai import OpenAI
+        client = OpenAI(api_key=preferences.openai_key)
+        
+        models = client.models.list()
+        available_models = []
+        
+        # Filter for GPT models only
+        for model in models:
+            if any(prefix in model.id for prefix in ['gpt-3.5', 'gpt-4']):
+                available_models.append({
+                    'id': model.id,
+                    'name': model.id.replace('gpt-', 'GPT-').replace('-turbo', ' Turbo')
+                })
+        
+        return JsonResponse({'models': available_models})
+        
+    except UserPreferences.DoesNotExist:
+        return JsonResponse({'error': 'User preferences not found'}, status=404)
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
+
+@login_required
+def fetch_deepseek_models(request):
+    try:
+        preferences = UserPreferences.objects.get(user=request.user)
+        if not preferences.deepseek_key:
+            return JsonResponse({'error': 'Deepseek API key not configured'}, status=400)
+            
+        from openai import OpenAI
+        client = OpenAI(api_key=preferences.deepseek_key, base_url="https://api.deepseek.com/v1")
+        
+        models = client.models.list()
+        available_models = []
+        
+        for model in models:
+            available_models.append({
+                'id': model.id,
+                'name': model.id.replace('-', ' ').title()
+            })
+        
+        return JsonResponse({'models': available_models})
+        
+    except UserPreferences.DoesNotExist:
+        return JsonResponse({'error': 'User preferences not found'}, status=404)
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=500)

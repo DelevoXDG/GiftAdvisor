@@ -42,16 +42,22 @@
                         </select>
                     </div>
 
-                    <div class="alert alert-info" role="alert">
+                    {% if current_ai_model == 'none' %}
+                    <div class="alert alert-warning" role="alert">
                         <h4 class="alert-heading mb-2" style="font-size: 1.1rem;">
-                            <i class="bi bi-info-circle me-2"></i>
-                            Coming Soon
+                            <i class="bi bi-exclamation-triangle me-2"></i>
+                            Limited Functionality
                         </h4>
                         <p class="mb-0" style="font-size: 0.95rem;">
-                            Support for additional AI models like Anthropic Claude, Mistral, and others is coming soon.
-                            Stay tuned for updates!
+                            Without an AI model selected, the following features will be disabled:
+                            <ul class="mb-0 mt-2">
+                                <li>Automatic gift suggestions</li>
+                                <li>Smart tagging for gifts</li>
+                                <li>Interest analysis for recipients</li>
+                            </ul>
                         </p>
                     </div>
+                    {% endif %}
                 </div>
             </div>
 
@@ -82,6 +88,14 @@
                                    autocomplete="off"
                                    spellcheck="false">
                         </div>
+                        {% if has_openai_key %}
+                        <div class="mb-3">
+                            <label for="openaiModel" class="form-label">Model</label>
+                            <select class="form-select" id="openaiModel">
+                                <option value="" disabled selected>Loading available models...</option>
+                            </select>
+                        </div>
+                        {% endif %}
                         <div class="d-flex gap-2">
                             <button type="button" class="btn btn-primary" id="saveOpenAIKeyBtn">
                                 {% if has_openai_key %}Update Key{% else %}Save Key{% endif %}
@@ -121,6 +135,14 @@
                                    autocomplete="off"
                                    spellcheck="false">
                         </div>
+                        {% if has_deepseek_key %}
+                        <div class="mb-3">
+                            <label for="deepseekModel" class="form-label">Model</label>
+                            <select class="form-select" id="deepseekModel">
+                                <option value="" disabled selected>Loading available models...</option>
+                            </select>
+                        </div>
+                        {% endif %}
                         <div class="d-flex gap-2">
                             <button type="button" class="btn btn-primary" id="saveDeepseekKeyBtn">
                                 {% if has_deepseek_key %}Update Key{% else %}Save Key{% endif %}
@@ -144,11 +166,14 @@ class Preferences {
         this.openaiKeyInput = document.getElementById('openaiKey');
         this.saveOpenAIKeyBtn = document.getElementById('saveOpenAIKeyBtn');
         this.removeOpenAIKeyBtn = document.getElementById('removeOpenAIKeyBtn');
+        this.openaiModelSelect = document.getElementById('openaiModel');
         this.deepseekKeyInput = document.getElementById('deepseekKey');
         this.saveDeepseekKeyBtn = document.getElementById('saveDeepseekKeyBtn');
         this.removeDeepseekKeyBtn = document.getElementById('removeDeepseekKeyBtn');
+        this.deepseekModelSelect = document.getElementById('deepseekModel');
         
         this.initializeEventListeners();
+        this.loadAvailableModels();
     }
 
     initializeEventListeners() {
@@ -161,6 +186,54 @@ class Preferences {
         }
         if (this.removeDeepseekKeyBtn) {
             this.removeDeepseekKeyBtn.addEventListener('click', () => this.handleRemoveKey('deepseek'));
+        }
+        if (this.openaiModelSelect) {
+            this.openaiModelSelect.addEventListener('change', () => this.handleModelTypeChange('openai'));
+        }
+        if (this.deepseekModelSelect) {
+            this.deepseekModelSelect.addEventListener('change', () => this.handleModelTypeChange('deepseek'));
+        }
+    }
+
+    async loadAvailableModels() {
+        if (this.openaiModelSelect) {
+            try {
+                const response = await fetch('/api/preferences/openai-models/');
+                if (response.ok) {
+                    const data = await response.json();
+                    this.openaiModelSelect.innerHTML = data.models.map(model => 
+                        `<option value="${model.id}" ${model.id === '{{ openai_model }}' ? 'selected' : ''}>
+                            ${model.name}
+                        </option>`
+                    ).join('');
+                } else {
+                    const error = await response.json();
+                    this.openaiModelSelect.innerHTML = `<option value="" disabled selected>${error.error || 'Failed to load models'}</option>`;
+                }
+            } catch (error) {
+                console.error('Error loading OpenAI models:', error);
+                this.openaiModelSelect.innerHTML = '<option value="" disabled selected>Failed to load models</option>';
+            }
+        }
+
+        if (this.deepseekModelSelect) {
+            try {
+                const response = await fetch('/api/preferences/deepseek-models/');
+                if (response.ok) {
+                    const data = await response.json();
+                    this.deepseekModelSelect.innerHTML = data.models.map(model => 
+                        `<option value="${model.id}" ${model.id === '{{ deepseek_model }}' ? 'selected' : ''}>
+                            ${model.name}
+                        </option>`
+                    ).join('');
+                } else {
+                    const error = await response.json();
+                    this.deepseekModelSelect.innerHTML = `<option value="" disabled selected>${error.error || 'Failed to load models'}</option>`;
+                }
+            } catch (error) {
+                console.error('Error loading Deepseek models:', error);
+                this.deepseekModelSelect.innerHTML = '<option value="" disabled selected>Failed to load models</option>';
+            }
         }
     }
 
@@ -186,6 +259,30 @@ class Preferences {
         } catch (error) {
             console.error('Error:', error);
             alert('Failed to update AI model preference');
+        }
+    }
+
+    async handleModelTypeChange(provider) {
+        const select = provider === 'openai' ? this.openaiModelSelect : this.deepseekModelSelect;
+        const model = select.value;
+        
+        try {
+            const response = await fetch(`/api/preferences/${provider}-model/`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                },
+                body: JSON.stringify({ model: model })
+            });
+            
+            const data = await response.json();
+            if (!response.ok) {
+                alert(data.error || `Failed to update ${provider} model`);
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            alert(`Failed to update ${provider} model`);
         }
     }
 

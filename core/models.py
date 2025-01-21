@@ -76,6 +76,8 @@ class UserPreferences(models.Model):
     current_ai_model = models.CharField(max_length=20, choices=AI_MODEL_CHOICES, default='none')
     openai_key = models.CharField(max_length=100, null=True, blank=True)
     deepseek_key = models.CharField(max_length=100, null=True, blank=True)
+    openai_model = models.CharField(max_length=50, default='gpt-3.5-turbo', null=True, blank=True)
+    deepseek_model = models.CharField(max_length=50, default='deepseek-chat', null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     
