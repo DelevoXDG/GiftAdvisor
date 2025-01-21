@@ -386,8 +386,12 @@ class PreferencesView(LoginRequiredMixin, TemplateView):
         try:
             preferences = UserPreferences.objects.get(user=self.request.user)
             context['has_openai_key'] = bool(preferences.openai_key)
+            context['has_deepseek_key'] = bool(preferences.deepseek_key)
+            context['current_ai_model'] = preferences.current_ai_model
         except UserPreferences.DoesNotExist:
             context['has_openai_key'] = False
+            context['has_deepseek_key'] = False
+            context['current_ai_model'] = 'none'
         return context
 
 @login_required
@@ -403,7 +407,7 @@ def update_openai_key(request):
             # Remove the key
             preferences.openai_key = None
             preferences.save()
-            return JsonResponse({'message': 'API key removed successfully'})
+            return JsonResponse({'message': 'OpenAI API key removed successfully'})
         else:
             # Validate and save the key
             if not api_key.startswith('sk-'):
@@ -411,7 +415,56 @@ def update_openai_key(request):
             
             preferences.openai_key = api_key
             preferences.save()
-            return JsonResponse({'message': 'API key saved successfully'})
+            return JsonResponse({'message': 'OpenAI API key saved successfully'})
+            
+    except json.JSONDecodeError:
+        return JsonResponse({'error': 'Invalid JSON data'}, status=400)
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
+
+@login_required
+@require_POST
+def update_deepseek_key(request):
+    try:
+        data = json.loads(request.body)
+        api_key = data.get('api_key')
+        
+        preferences, created = UserPreferences.objects.get_or_create(user=request.user)
+        
+        if api_key is None:
+            # Remove the key
+            preferences.deepseek_key = None
+            preferences.save()
+            return JsonResponse({'message': 'Deepseek API key removed successfully'})
+        else:
+            # Validate and save the key
+            if not api_key.startswith('sk-'):
+                return JsonResponse({'error': 'Invalid API key format'}, status=400)
+            
+            preferences.deepseek_key = api_key
+            preferences.save()
+            return JsonResponse({'message': 'Deepseek API key saved successfully'})
+            
+    except json.JSONDecodeError:
+        return JsonResponse({'error': 'Invalid JSON data'}, status=400)
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
+
+@login_required
+@require_POST
+def update_current_model(request):
+    try:
+        data = json.loads(request.body)
+        current_model = data.get('current_ai_model')
+        
+        if current_model not in dict(UserPreferences.AI_MODEL_CHOICES):
+            return JsonResponse({'error': 'Invalid model selection'}, status=400)
+        
+        preferences, created = UserPreferences.objects.get_or_create(user=request.user)
+        preferences.current_ai_model = current_model
+        preferences.save()
+        
+        return JsonResponse({'message': 'AI model preference updated successfully'})
             
     except json.JSONDecodeError:
         return JsonResponse({'error': 'Invalid JSON data'}, status=400)

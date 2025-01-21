@@ -30,7 +30,9 @@ from core.views import (
     gift_detail,
     gift_detail_api,
     PreferencesView,
-    update_openai_key
+    update_openai_key,
+    update_deepseek_key,
+    update_current_model
 )
 
 urlpatterns = [
@@ -52,4 +54,6 @@ urlpatterns = [
     path('api/recipients/<int:recipient_id>/', recipient_detail, name='recipient_detail'),
     path('api/recipients/<int:recipient_id>/gifts/', add_gift_to_recipient, name='add_gift_to_recipient'),
     path('api/preferences/openai-key/', update_openai_key, name='update_openai_key'),
+    path('api/preferences/deepseek-key/', update_deepseek_key, name='update_deepseek_key'),
+    path('api/preferences/current-model/', update_current_model, name='update_current_model'),
 ]

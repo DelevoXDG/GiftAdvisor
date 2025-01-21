@@ -28,11 +28,16 @@ class GiftIdeaAdmin(admin.ModelAdmin):
 
 @admin.register(UserPreferences)
 class UserPreferencesAdmin(admin.ModelAdmin):
-    list_display = ('user', 'has_openai_key', 'created_at', 'updated_at')
-    list_filter = ('user',)
+    list_display = ('user', 'current_ai_model', 'has_openai_key', 'has_deepseek_key', 'created_at', 'updated_at')
+    list_filter = ('current_ai_model', 'user')
     search_fields = ('user__email', 'user__username')
     
     def has_openai_key(self, obj):
         return bool(obj.openai_key)
     has_openai_key.boolean = True
     has_openai_key.short_description = 'Has OpenAI Key'
+    
+    def has_deepseek_key(self, obj):
+        return bool(obj.deepseek_key)
+    has_deepseek_key.boolean = True
+    has_deepseek_key.short_description = 'Has Deepseek Key'

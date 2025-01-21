@@ -28,56 +28,107 @@
     <!-- Main Content -->
     <div class="main-content">
         <div class="container py-4">
+            <!-- AI Model Selection -->
             <div class="card rounded-4 border-0 shadow mb-4">
                 <div class="card-body p-4">
-                    <h2 class="fw-bold mb-4" style="font-size: 1.75rem;">API Keys</h2>
+                    <h2 class="fw-bold mb-4" style="font-size: 1.75rem;">AI Model Settings</h2>
                     
-                    <!-- OpenAI API Key Section -->
                     <div class="mb-4">
-                        <div class="d-flex justify-content-between align-items-start mb-3">
-                            <div>
-                                <h3 class="fw-bold mb-2" style="font-size: 1.25rem;">OpenAI API Key</h3>
-                                <p class="text-muted mb-0" style="font-size: 0.95rem;">
-                                    Add your OpenAI API key to enable AI-powered features like auto-tagging and gift suggestions.
-                                </p>
-                            </div>
-                            {% if has_openai_key %}
-                                <span class="badge bg-success">Connected</span>
-                            {% else %}
-                                <span class="badge bg-secondary">Not Connected</span>
-                            {% endif %}
-                        </div>
-
-                        <div class="api-key-form">
-                            <div class="modern-input-wrapper mb-3">
-                                <i class="bi bi-key input-icon"></i>
-                                <input type="text" 
-                                       id="openaiKey" 
-                                       class="modern-input" 
-                                       placeholder="sk-..." 
-                                       autocomplete="off"
-                                       spellcheck="false">
-                            </div>
-                            <div class="d-flex gap-2">
-                                <button type="button" class="btn btn-primary" id="saveKeyBtn">
-                                    {% if has_openai_key %}Update Key{% else %}Save Key{% endif %}
-                                </button>
-                                {% if has_openai_key %}
-                                    <button type="button" class="btn btn-outline-danger" id="removeKeyBtn">Remove Key</button>
-                                {% endif %}
-                            </div>
-                        </div>
+                        <h3 class="fw-bold mb-3" style="font-size: 1.25rem;">Current Model</h3>
+                        <select class="form-select" id="currentModel">
+                            <option value="none" {% if current_ai_model == 'none' %}selected{% endif %}>None selected</option>
+                            <option value="openai" {% if current_ai_model == 'openai' %}selected{% endif %}>OpenAI</option>
+                            <option value="deepseek" {% if current_ai_model == 'deepseek' %}selected{% endif %}>Deepseek</option>
+                        </select>
                     </div>
 
                     <div class="alert alert-info" role="alert">
                         <h4 class="alert-heading mb-2" style="font-size: 1.1rem;">
                             <i class="bi bi-info-circle me-2"></i>
-                            About API Keys
+                            Coming Soon
                         </h4>
                         <p class="mb-0" style="font-size: 0.95rem;">
-                            Your API key is encrypted before being stored and can only be decrypted with your account credentials.
-                            We never share your API keys with third parties.
+                            Support for additional AI models like Anthropic Claude, Mistral, and others is coming soon.
+                            Stay tuned for updates!
                         </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- OpenAI Section -->
+            <div class="card rounded-4 border-0 shadow mb-4">
+                <div class="card-body p-4">
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                        <div>
+                            <h2 class="fw-bold mb-2" style="font-size: 1.75rem;">OpenAI</h2>
+                            <p class="text-muted mb-0" style="font-size: 0.95rem;">
+                                Add your OpenAI API key for gift suggestions and auto-tagging.
+                            </p>
+                        </div>
+                        {% if has_openai_key %}
+                            <span class="badge bg-success">Connected</span>
+                        {% else %}
+                            <span class="badge bg-secondary">Not Connected</span>
+                        {% endif %}
+                    </div>
+
+                    <div class="api-key-form">
+                        <div class="modern-input-wrapper mb-3">
+                            <i class="bi bi-key input-icon"></i>
+                            <input type="text" 
+                                   id="openaiKey" 
+                                   class="modern-input" 
+                                   placeholder="sk-..." 
+                                   autocomplete="off"
+                                   spellcheck="false">
+                        </div>
+                        <div class="d-flex gap-2">
+                            <button type="button" class="btn btn-primary" id="saveOpenAIKeyBtn">
+                                {% if has_openai_key %}Update Key{% else %}Save Key{% endif %}
+                            </button>
+                            {% if has_openai_key %}
+                                <button type="button" class="btn btn-outline-danger" id="removeOpenAIKeyBtn">Remove Key</button>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Deepseek Section -->
+            <div class="card rounded-4 border-0 shadow mb-4">
+                <div class="card-body p-4">
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                        <div>
+                            <h2 class="fw-bold mb-2" style="font-size: 1.75rem;">Deepseek</h2>
+                            <p class="text-muted mb-0" style="font-size: 0.95rem;">
+                                Add your Deepseek API key for gift suggestions and auto-tagging.
+                            </p>
+                        </div>
+                        {% if has_deepseek_key %}
+                            <span class="badge bg-success">Connected</span>
+                        {% else %}
+                            <span class="badge bg-secondary">Not Connected</span>
+                        {% endif %}
+                    </div>
+
+                    <div class="api-key-form">
+                        <div class="modern-input-wrapper mb-3">
+                            <i class="bi bi-key input-icon"></i>
+                            <input type="text" 
+                                   id="deepseekKey" 
+                                   class="modern-input" 
+                                   placeholder="sk-..." 
+                                   autocomplete="off"
+                                   spellcheck="false">
+                        </div>
+                        <div class="d-flex gap-2">
+                            <button type="button" class="btn btn-primary" id="saveDeepseekKeyBtn">
+                                {% if has_deepseek_key %}Update Key{% else %}Save Key{% endif %}
+                            </button>
+                            {% if has_deepseek_key %}
+                                <button type="button" class="btn btn-outline-danger" id="removeDeepseekKeyBtn">Remove Key</button>
+                            {% endif %}
+                        </div>
                     </div>
                 </div>
             </div>
@@ -89,34 +140,71 @@
 <script>
 class Preferences {
     constructor() {
-        this.keyInput = document.getElementById('openaiKey');
-        this.saveKeyBtn = document.getElementById('saveKeyBtn');
-        this.removeKeyBtn = document.getElementById('removeKeyBtn');
+        this.currentModelSelect = document.getElementById('currentModel');
+        this.openaiKeyInput = document.getElementById('openaiKey');
+        this.saveOpenAIKeyBtn = document.getElementById('saveOpenAIKeyBtn');
+        this.removeOpenAIKeyBtn = document.getElementById('removeOpenAIKeyBtn');
+        this.deepseekKeyInput = document.getElementById('deepseekKey');
+        this.saveDeepseekKeyBtn = document.getElementById('saveDeepseekKeyBtn');
+        this.removeDeepseekKeyBtn = document.getElementById('removeDeepseekKeyBtn');
         
         this.initializeEventListeners();
     }
 
     initializeEventListeners() {
-        this.saveKeyBtn.addEventListener('click', () => this.handleSaveKey());
-        if (this.removeKeyBtn) {
-            this.removeKeyBtn.addEventListener('click', () => this.handleRemoveKey());
+        this.currentModelSelect.addEventListener('change', () => this.handleModelChange());
+        this.saveOpenAIKeyBtn.addEventListener('click', () => this.handleSaveKey('openai'));
+        this.saveDeepseekKeyBtn.addEventListener('click', () => this.handleSaveKey('deepseek'));
+        
+        if (this.removeOpenAIKeyBtn) {
+            this.removeOpenAIKeyBtn.addEventListener('click', () => this.handleRemoveKey('openai'));
+        }
+        if (this.removeDeepseekKeyBtn) {
+            this.removeDeepseekKeyBtn.addEventListener('click', () => this.handleRemoveKey('deepseek'));
         }
     }
 
-    async handleSaveKey() {
-        const apiKey = this.keyInput.value.trim();
+    async handleModelChange() {
+        const model = this.currentModelSelect.value;
+        
+        try {
+            const response = await fetch('/api/preferences/current-model/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                },
+                body: JSON.stringify({ current_ai_model: model })
+            });
+            
+            const data = await response.json();
+            if (response.ok) {
+                window.location.reload();
+            } else {
+                alert(data.error || 'Failed to update AI model preference');
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            alert('Failed to update AI model preference');
+        }
+    }
+
+    async handleSaveKey(provider) {
+        const input = provider === 'openai' ? this.openaiKeyInput : this.deepseekKeyInput;
+        const apiKey = input.value.trim();
+        
         if (!apiKey) {
             alert('Please enter an API key');
             return;
         }
         
         if (!apiKey.startsWith('sk-')) {
-            alert('Invalid API key format. OpenAI API keys should start with "sk-"');
+            alert('Invalid API key format. API keys should start with "sk-"');
             return;
         }
         
         try {
-            const response = await fetch('/api/preferences/openai-key/', {
+            const response = await fetch(`/api/preferences/${provider}-key/`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -129,21 +217,21 @@ class Preferences {
             if (response.ok) {
                 window.location.reload();
             } else {
-                alert(data.error || 'Failed to save API key');
+                alert(data.error || `Failed to save ${provider} API key`);
             }
         } catch (error) {
             console.error('Error:', error);
-            alert('Failed to save API key');
+            alert(`Failed to save ${provider} API key`);
         }
     }
 
-    async handleRemoveKey() {
-        if (!confirm('Are you sure you want to remove your OpenAI API key?')) {
+    async handleRemoveKey(provider) {
+        if (!confirm(`Are you sure you want to remove your ${provider} API key?`)) {
             return;
         }
         
         try {
-            const response = await fetch('/api/preferences/openai-key/', {
+            const response = await fetch(`/api/preferences/${provider}-key/`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -156,11 +244,11 @@ class Preferences {
             if (response.ok) {
                 window.location.reload();
             } else {
-                alert(data.error || 'Failed to remove API key');
+                alert(data.error || `Failed to remove ${provider} API key`);
             }
         } catch (error) {
             console.error('Error:', error);
-            alert('Failed to remove API key');
+            alert(`Failed to remove ${provider} API key`);
         }
     }
 }

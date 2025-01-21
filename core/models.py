@@ -65,9 +65,17 @@ class GiftIdea(models.Model):
         return self.title
 
 class UserPreferences(models.Model):
-    """Model for storing user preferences including API keys."""
+    """Model for storing user preferences including AI model settings."""
+    AI_MODEL_CHOICES = [
+        ('none', 'No model'),
+        ('openai', 'OpenAI'),
+        ('deepseek', 'Deepseek'),
+    ]
+    
     user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    current_ai_model = models.CharField(max_length=20, choices=AI_MODEL_CHOICES, default='none')
     openai_key = models.CharField(max_length=100, null=True, blank=True)
+    deepseek_key = models.CharField(max_length=100, null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     
