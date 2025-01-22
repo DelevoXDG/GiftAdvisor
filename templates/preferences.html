@@ -194,6 +194,44 @@
     </div>
 </div>
 
+{% block extra_css %}
+<style>
+    /* Consistent button and input styling */
+    .btn {
+        border-radius: 50rem;
+    }
+
+    .form-control, .form-select {
+        border-radius: 0.75rem;
+    }
+
+    .badge {
+        border-radius: 50rem;
+    }
+
+    /* Save button styling */
+    .save-btn {
+        box-shadow: 0 .2rem .3rem rgba(0,0,0,.1);
+        transition: all 0.2s ease-in-out;
+    }
+
+    .save-btn:hover {
+        box-shadow: 0 .3rem .5rem rgba(0,0,0,.15);
+        transform: translateY(-1px);
+    }
+
+    /* Section titles */
+    .section-title {
+        font-size: 1.5rem;
+    }
+
+    /* Form labels */
+    .form-label {
+        font-weight: 500;
+    }
+</style>
+{% endblock %}
+
 {% block extra_js %}
 <script>
 class Preferences {

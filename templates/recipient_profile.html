@@ -1,6 +1,51 @@
 {% extends 'base.html' %}
 {% load static %}
 
+{% block extra_css %}
+<style>
+    /* Consistent button and input styling */
+    .btn {
+        border-radius: 50rem;
+    }
+
+    .form-control, .form-select {
+        border-radius: 0.75rem;
+    }
+
+    .badge {
+        border-radius: 50rem;
+    }
+
+    /* Action buttons styling */
+    .action-btn {
+        box-shadow: 0 .2rem .3rem rgba(0,0,0,.1);
+        transition: all 0.2s ease-in-out;
+    }
+
+    .action-btn:hover {
+        box-shadow: 0 .3rem .5rem rgba(0,0,0,.15);
+        transform: translateY(-1px);
+    }
+
+    /* Font consistency */
+    .recipient-name {
+        font-size: 1.75rem;
+    }
+
+    .section-title {
+        font-size: 1.5rem;
+    }
+
+    .gift-title {
+        font-size: 1.25rem;
+    }
+
+    .gift-price {
+        font-size: 1.1rem;
+    }
+</style>
+{% endblock %}
+
 {% block content %}
 <div class="d-flex">
     <!-- Left Sidebar -->
