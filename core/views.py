@@ -1,4 +1,4 @@
-from django.shortcuts import render
+from django.shortcuts import render, get_object_or_404, redirect
 from django.views.generic import TemplateView
 from django.contrib.auth.mixins import LoginRequiredMixin
 from .models import GiftIdea, Tag, Recipient, UserPreferences
@@ -11,6 +11,8 @@ from django.shortcuts import get_object_or_404
 import json
 from django.db.models import Q
 from django.contrib.auth.decorators import login_required
+from django.contrib import messages
+from .services.ai_processor import AIProcessor
 
 User = get_user_model()
 
@@ -204,31 +206,73 @@ def add_gift(request):
     try:
         data = json.loads(request.body)
         
-        # Create the gift idea
-        gift = GiftIdea.objects.create(
-            user=request.user,
-            title=data.get('title'),
-            description=data.get('description', ''),
-            price=data.get('price'),
-            url=data.get('url', ''),
-            image_url=data.get('image_url', ''),
-            status='idea'
-        )
+        # Start AI processing
+        processor = AIProcessor(request.user)
+        success, suggestions, error = processor.process_gift_idea(data)
         
-        # Add recipients if provided
-        if 'recipients' in data:
-            gift.recipients.set(data['recipients'])
-        
-        # Handle tags
-        if 'tags' in data:
-            gift.tags.set(data['tags'])
+        if success:
+            # Update gift data with AI suggestions
+            data['title'] = suggestions.get('title', data['title'])
+            data['description'] = suggestions.get('description', data.get('description', ''))
+            
+            # Create the gift idea
+            gift = GiftIdea.objects.create(
+                user=request.user,
+                title=data['title'],
+                description=data['description'],
+                price=data.get('price'),
+                url=data.get('url', ''),
+                image_url=data.get('image_url', ''),
+                status='idea'
+            )
+            
+            # Add suggested tags
+            suggested_tags = suggestions.get('tags', [])
+            if suggested_tags:
+                tags = Tag.objects.filter(name__in=suggested_tags)
+                gift.tags.set(tags)
+            
+            # Add suggested recipients
+            suggested_recipients = suggestions.get('recipients', [])
+            if suggested_recipients:
+                recipients = Recipient.objects.filter(
+                    id__in=suggested_recipients,
+                    user=request.user
+                )
+                gift.recipients.set(recipients)
+            
+            messages.success(
+                request, 
+                f'Gift idea added successfully! {suggestions.get("reasoning", "")}'
+            )
+        else:
+            # If AI processing failed, create gift without suggestions
+            gift = GiftIdea.objects.create(
+                user=request.user,
+                title=data['title'],
+                description=data.get('description', ''),
+                price=data.get('price'),
+                url=data.get('url', ''),
+                image_url=data.get('image_url', ''),
+                status='idea'
+            )
+            
+            if error:
+                messages.warning(
+                    request, 
+                    f'Gift idea added, but AI processing failed: {error}'
+                )
+            else:
+                messages.success(request, 'Gift idea added successfully!')
         
         return JsonResponse({
             'message': 'Gift idea added successfully',
-            'id': gift.id
+            'id': gift.id,
+            'ai_processed': success
         })
         
     except Exception as e:
+        messages.error(request, f'Failed to add gift idea: {str(e)}')
         return JsonResponse({'error': str(e)}, status=400)
 
 class RecipientProfileView(LoginRequiredMixin, TemplateView):
@@ -377,6 +421,77 @@ def gift_detail_api(request, gift_id):
             return JsonResponse({'message': 'Gift deleted successfully'})
         except Exception as e:
             return JsonResponse({'error': str(e)}, status=400)
+
+def get_or_create_tags(tag_names):
+    """Convert tag names to tag IDs, creating tags if they don't exist."""
+    tags = []
+    for name in tag_names:
+        tag, _ = Tag.objects.get_or_create(name=name)
+        tags.append(tag.id)
+    return tags
+
+@require_http_methods(["POST"])
+def process_gift_with_ai(request, gift_id):
+    """Process a gift idea with AI to get tag and recipient suggestions."""
+    try:
+        gift = GiftIdea.objects.get(id=gift_id, user=request.user)
+    except GiftIdea.DoesNotExist:
+        return JsonResponse({'error': 'Gift not found'}, status=404)
+    
+    # Initialize AI processor
+    processor = AIProcessor(request.user)
+    
+    # Process the gift
+    success, suggestions, error = processor.process_gift_idea({
+        'title': gift.title,
+        'description': gift.description,
+        'price': gift.price,
+        'url': gift.url
+    })
+    
+    if not success:
+        return JsonResponse({'error': error or 'Failed to process with AI'}, status=400)
+    
+    try:
+        # Update the gift with AI suggestions
+        if 'tags' in suggestions:
+            # Convert tag names to IDs
+            tag_ids = get_or_create_tags(suggestions['tags'])
+            gift.tags.set(tag_ids)
+            
+        if 'recipients' in suggestions:
+            # Ensure all recipient IDs exist and belong to the user
+            valid_recipient_ids = list(
+                Recipient.objects.filter(
+                    id__in=suggestions['recipients'], 
+                    user=request.user
+                ).values_list('id', flat=True)
+            )
+            gift.recipients.set(valid_recipient_ids)
+            
+        if 'title' in suggestions:
+            gift.title = suggestions['title']
+            
+        if 'description' in suggestions:
+            gift.description = suggestions['description']
+            
+        gift.save()
+        
+        return JsonResponse({
+            'message': 'Successfully processed gift with AI',
+            'suggestions': {
+                'title': gift.title,
+                'description': gift.description,
+                'tags': list(gift.tags.values_list('name', flat=True)),
+                'recipients': list(gift.recipients.values_list('id', flat=True)),
+                'reasoning': suggestions.get('reasoning', '')
+            }
+        })
+        
+    except Exception as e:
+        return JsonResponse({
+            'error': f'Failed to update gift with AI suggestions: {str(e)}'
+        }, status=400)
 
 class PreferencesView(LoginRequiredMixin, TemplateView):
     template_name = 'preferences.html'

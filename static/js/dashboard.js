@@ -69,6 +69,10 @@ class Dashboard {
         }
         this.isSubmitting = true;
         
+        // Show processing message
+        const toast = bootstrap.Toast.getOrCreateInstance(document.getElementById('processingToast'));
+        toast.show();
+        
         const formData = {
             title: this.addGiftForm.querySelector('[name="title"]').value,
             description: this.addGiftForm.querySelector('[name="description"]').value,
@@ -93,14 +97,21 @@ class Dashboard {
             
             if (response.ok) {
                 this.bsModal.hide();
+                // Messages will be shown on page reload
                 window.location.reload();
             } else {
-                alert(data.error || 'Failed to add gift idea');
+                // Show error message
+                const errorToast = bootstrap.Toast.getOrCreateInstance(document.getElementById('errorToast'));
+                document.getElementById('errorToastMessage').textContent = data.error || 'Failed to add gift idea';
+                errorToast.show();
                 this.isSubmitting = false;
             }
         } catch (error) {
             console.error('Error:', error);
-            alert('Failed to add gift idea');
+            // Show error message
+            const errorToast = bootstrap.Toast.getOrCreateInstance(document.getElementById('errorToast'));
+            document.getElementById('errorToastMessage').textContent = 'Failed to add gift idea';
+            errorToast.show();
             this.isSubmitting = false;
         }
     }

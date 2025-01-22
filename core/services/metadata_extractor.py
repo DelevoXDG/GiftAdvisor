@@ -53,7 +53,6 @@ class MetadataExtractor:
             response = session.get(url, headers=self._get_headers(url), timeout=10)
             response.raise_for_status()
 
-            print("Response: ", response.text)
             soup = BeautifulSoup(response.text, 'lxml')
             
             # Try different methods to get the data

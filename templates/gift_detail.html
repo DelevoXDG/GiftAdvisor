@@ -69,10 +69,19 @@
                                     </div>
                                     <p class="text-primary fw-bold mb-0" style="font-size: 1.25rem;">${{ gift.price }}</p>
                                 </div>
-                                <button class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#editGiftModal">
-                                    <i class="bi bi-pencil me-2"></i>
-                                    Edit Details
-                                </button>
+                                <div class="d-flex gap-2">
+                                    <form method="POST" action="{% url 'process_gift_with_ai' gift.id %}" id="processWithAIForm">
+                                        {% csrf_token %}
+                                        <button type="submit" class="btn btn-primary d-flex align-items-center gap-2">
+                                            <i class="bi bi-magic"></i>
+                                            <span>Process with AI</span>
+                                        </button>
+                                    </form>
+                                    <button class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#editGiftModal">
+                                        <i class="bi bi-pencil me-2"></i>
+                                        Edit Details
+                                    </button>
+                                </div>
                             </div>
 
                             <div class="gift-details">
@@ -244,7 +253,120 @@
     </div>
 </div>
 
+<!-- Processing Toast -->
+<div class="toast-container position-fixed bottom-0 end-0 p-3">
+    <div id="processingToast" class="toast" role="alert" aria-live="assertive" aria-atomic="true" data-bs-autohide="false">
+        <div class="toast-header bg-primary text-white">
+            <i class="bi bi-magic me-2"></i>
+            <strong class="me-auto">Processing</strong>
+        </div>
+        <div class="toast-body">
+            <div class="d-flex align-items-center">
+                <div class="spinner-border spinner-border-sm me-2" role="status">
+                    <span class="visually-hidden">Processing...</span>
+                </div>
+                <span>Processing gift idea with AI...</span>
+            </div>
+        </div>
+    </div>
+    
+    <div id="errorToast" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
+        <div class="toast-header bg-danger text-white">
+            <i class="bi bi-exclamation-circle me-2"></i>
+            <strong class="me-auto">Error</strong>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast"></button>
+        </div>
+        <div class="toast-body" id="errorToastMessage">
+        </div>
+    </div>
+</div>
+
 {% block extra_js %}
 <script src="{% static 'js/gift_detail.js' %}"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const giftDetail = new GiftDetail();
+        
+        // Handle AI processing form
+        const processForm = document.getElementById('processWithAIForm');
+        const processBtn = processForm.querySelector('button');
+        
+        processForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            // Disable button and show processing toast
+            processBtn.disabled = true;
+            const processingToast = bootstrap.Toast.getOrCreateInstance(document.getElementById('processingToast'));
+            processingToast.show();
+            
+            try {
+                const response = await fetch(processForm.action, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                    }
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    // Update the gift data
+                    const form = document.getElementById('editGiftForm');
+                    
+                    if (data.suggestions.title) {
+                        form.querySelector('[name="title"]').value = data.suggestions.title;
+                    }
+                    if (data.suggestions.description) {
+                        form.querySelector('[name="description"]').value = data.suggestions.description;
+                    }
+                    
+                    // Update tags
+                    const tagSelect = form.querySelector('[name="tags"]');
+                    Array.from(tagSelect.options).forEach(option => {
+                        option.selected = data.suggestions.tags.includes(option.text.trim());
+                    });
+                    
+                    // Update recipients
+                    const recipientSelect = form.querySelector('[name="recipients"]');
+                    Array.from(recipientSelect.options).forEach(option => {
+                        option.selected = data.suggestions.recipients.includes(parseInt(option.value));
+                    });
+                    
+                    // Show success message
+                    const successToast = document.createElement('div');
+                    successToast.className = 'toast show';
+                    successToast.innerHTML = `
+                        <div class="toast-header bg-success text-white">
+                            <i class="bi bi-check-circle me-2"></i>
+                            <strong class="me-auto">Success</strong>
+                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast"></button>
+                        </div>
+                        <div class="toast-body">
+                            ${data.message}
+                        </div>
+                    `;
+                    document.querySelector('.toast-container').appendChild(successToast);
+                    new bootstrap.Toast(successToast).show();
+                    
+                    // Show the edit modal with updates
+                    bootstrap.Modal.getOrCreateInstance(document.getElementById('editGiftModal')).show();
+                } else {
+                    // Show error message
+                    const errorToast = bootstrap.Toast.getOrCreateInstance(document.getElementById('errorToast'));
+                    document.getElementById('errorToastMessage').textContent = data.error || 'Failed to process with AI';
+                    errorToast.show();
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                const errorToast = bootstrap.Toast.getOrCreateInstance(document.getElementById('errorToast'));
+                document.getElementById('errorToastMessage').textContent = 'Failed to process with AI';
+                errorToast.show();
+            } finally {
+                processBtn.disabled = false;
+                processingToast.hide();
+            }
+        });
+    });
+</script>
 {% endblock %}
 {% endblock %} 
