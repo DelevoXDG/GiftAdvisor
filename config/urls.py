@@ -40,7 +40,8 @@ from core.views import (
     process_gift_with_ai,
     purchases,
     record_purchase,
-    update_purchase_feedback
+    update_purchase_feedback,
+    delete_purchase
 )
 
 urlpatterns = [
@@ -53,6 +54,7 @@ urlpatterns = [
     path('purchases/', purchases, name='purchases'),
     path('gifts/<int:gift_id>/purchase/', record_purchase, name='record_purchase'),
     path('purchases/<int:purchase_id>/feedback/', update_purchase_feedback, name='update_purchase_feedback'),
+    path('purchases/<int:purchase_id>/delete/', delete_purchase, name='delete_purchase'),
     path('accounts/', include('allauth.urls')),
     
     # API endpoints

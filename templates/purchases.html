@@ -7,22 +7,22 @@
     <div class="sidebar mt-4">
         <div class="mb-5">
             <h5 class="text-muted mb-3">Sections</h5>
-            <a href="{% url 'index' %}" class="sidebar-link">
+            <a href="{% url 'index' %}" class="sidebar-link {% if request.resolver_match.url_name == 'index' %}active{% endif %}">
                 <i class="bi bi-gift"></i>
                 <span>Gift Ideas</span>
             </a>
-            <a href="{% url 'recipients' %}" class="sidebar-link">
+            <a href="{% url 'recipients' %}" class="sidebar-link {% if request.resolver_match.url_name == 'recipients' or request.resolver_match.url_name == 'recipient_profile' %}active{% endif %}">
                 <i class="bi bi-people"></i>
                 <span>Recipients</span>
             </a>
-            <a href="{% url 'purchases' %}" class="sidebar-link active">
+            <a href="{% url 'purchases' %}" class="sidebar-link {% if request.resolver_match.url_name == 'purchases' or request.resolver_match.url_name == 'record_purchase' or request.resolver_match.url_name == 'update_purchase_feedback' %}active{% endif %}">
                 <i class="bi bi-bag-check"></i>
                 <span>Purchases</span>
             </a>
         </div>
         <div>
             <h5 class="text-muted mb-3">Settings</h5>
-            <a href="{% url 'preferences' %}" class="sidebar-link">
+            <a href="{% url 'preferences' %}" class="sidebar-link {% if request.resolver_match.url_name == 'preferences' %}active{% endif %}">
                 <i class="bi bi-gear"></i>
                 <span>Preferences</span>
             </a>
@@ -32,95 +32,192 @@
     <!-- Main Content -->
     <div class="main-content">
         <div class="container py-4">
-            <h2 class="fw-bold mb-4" style="font-size: 1.75rem;">Purchase History</h2>
+            <div class="card rounded-4 border-0 shadow-sm">
+                <div class="card-body p-4">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h2 class="fw-bold" style="font-size: 1.75rem;">Purchases</h2>
+                    </div>
 
-            {% if purchases %}
-                <div class="purchase-list">
-                    {% for purchase in purchases %}
-                        <div class="card rounded-4 border-0 shadow-sm mb-3">
-                            <div class="card-body p-4">
-                                <div class="d-flex justify-content-between align-items-start">
-                                    <div>
-                                        <h5 class="fw-bold mb-2">{{ purchase.gift.title }}</h5>
-                                        <p class="text-muted mb-2">
-                                            Gifted to {{ purchase.recipient.name }}
-                                            <span class="mx-2">•</span>
-                                            {{ purchase.purchase_date|date:"M j, Y" }}
-                                        </p>
-                                        {% if purchase.feedback %}
-                                            <p class="mb-0"><small class="text-muted">{{ purchase.feedback }}</small></p>
-                                        {% endif %}
-                                    </div>
-                                    <button class="btn btn-outline-primary rounded-pill" 
-                                            data-bs-toggle="modal" 
-                                            data-bs-target="#editFeedbackModal{{ purchase.id }}">
-                                        <i class="bi bi-pencil me-2"></i>
-                                        Edit Feedback
-                                    </button>
-                                </div>
-                            </div>
+                    <!-- Search Form -->
+                    <form class="mb-4" method="GET">
+                        <div class="input-group">
+                            <input type="text" 
+                                   name="search" 
+                                   class="form-control rounded-start-pill" 
+                                   placeholder="Search by gift title, recipient name, or feedback..."
+                                   value="{{ request.GET.search }}">
+                            <button class="btn btn-primary rounded-end-pill" type="submit">
+                                <i class="bi bi-search"></i>
+                            </button>
                         </div>
+                    </form>
 
-                        <!-- Edit Feedback Modal -->
-                        <div class="modal fade" id="editFeedbackModal{{ purchase.id }}" tabindex="-1">
-                            <div class="modal-dialog">
-                                <div class="modal-content">
-                                    <div class="modal-header">
-                                        <h5 class="modal-title">Edit Feedback</h5>
-                                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                                    </div>
-                                    <form action="{% url 'update_purchase_feedback' purchase.id %}" method="POST">
-                                        {% csrf_token %}
-                                        <div class="modal-body">
-                                            <div class="mb-3">
-                                                <label class="form-label">Feedback</label>
-                                                <textarea name="feedback" class="form-control" rows="3">{{ purchase.feedback }}</textarea>
+                    <!-- Purchases List -->
+                    {% if purchases %}
+                        <div class="list-group">
+                            {% for purchase in purchases %}
+                                <div class="card rounded-4 border-0 shadow-sm mb-3 hover-shadow-md">
+                                    <div class="card-body p-4">
+                                        <div class="d-flex gap-4">
+                                            <!-- Gift Image -->
+                                            <div class="flex-shrink-0" style="width: 100px; height: 100px;">
+                                                {% if purchase.gift.image_url %}
+                                                    <img src="{{ purchase.gift.image_url }}" 
+                                                         alt="{{ purchase.gift.title }}" 
+                                                         class="w-100 h-100 rounded-3 object-fit-cover">
+                                                {% else %}
+                                                    <div class="w-100 h-100 rounded-3 bg-light d-flex align-items-center justify-content-center">
+                                                        <i class="bi bi-image text-muted" style="font-size: 2rem;"></i>
+                                                    </div>
+                                                {% endif %}
+                                            </div>
+                                            
+                                            <!-- Purchase Details -->
+                                            <div class="flex-grow-1 d-flex justify-content-between align-items-start">
+                                                <div>
+                                                    <h5 class="text-body mb-2 text-truncate" style="max-width: 400px;">{{ purchase.gift.title }}</h5>
+                                                    <p class="text-muted mb-2">
+                                                        <i class="bi bi-person me-2"></i>{{ purchase.recipient.name }}
+                                                        <span class="mx-2">•</span>
+                                                        <i class="bi bi-calendar me-2"></i>{{ purchase.purchase_date|date:"M j, Y" }}
+                                                    </p>
+                                                    {% if purchase.feedback %}
+                                                        <p class="mb-0 text-muted">
+                                                            <i class="bi bi-chat-left-text me-2"></i>
+                                                            {{ purchase.feedback }}
+                                                        </p>
+                                                    {% endif %}
+                                                </div>
+                                                <button class="btn btn-outline-primary rounded-pill ms-3" 
+                                                        data-bs-toggle="modal" 
+                                                        data-bs-target="#editPurchaseModal{{ purchase.id }}">
+                                                    <i class="bi bi-pencil me-2"></i>
+                                                    Edit Details
+                                                </button>
                                             </div>
                                         </div>
-                                        <div class="modal-footer">
-                                            <button type="button" class="btn btn-secondary rounded-pill" data-bs-dismiss="modal">Cancel</button>
-                                            <button type="submit" class="btn btn-primary rounded-pill">Save Changes</button>
-                                        </div>
-                                    </form>
+                                    </div>
                                 </div>
-                            </div>
+
+                                <!-- Edit Purchase Modal -->
+                                <div class="modal fade" id="editPurchaseModal{{ purchase.id }}" tabindex="-1">
+                                    <div class="modal-dialog">
+                                        <div class="modal-content rounded-4">
+                                            <div class="modal-header">
+                                                <h5 class="modal-title">Edit Purchase Details</h5>
+                                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                            </div>
+                                            <form action="{% url 'update_purchase_feedback' purchase.id %}" method="POST">
+                                                {% csrf_token %}
+                                                <div class="modal-body">
+                                                    <div class="mb-3">
+                                                        <label class="form-label">Purchase Date</label>
+                                                        <input type="date" 
+                                                               name="purchase_date" 
+                                                               class="form-control" 
+                                                               value="{{ purchase.purchase_date|date:'Y-m-d' }}"
+                                                               required>
+                                                    </div>
+                                                    <div class="mb-3">
+                                                        <label class="form-label">Feedback</label>
+                                                        <textarea name="feedback" 
+                                                                  class="form-control" 
+                                                                  rows="3" 
+                                                                  placeholder="Add any notes about the gift...">{{ purchase.feedback }}</textarea>
+                                                    </div>
+                                                </div>
+                                                <div class="modal-footer">
+                                                    <button type="button" 
+                                                            class="btn btn-danger me-auto rounded-pill" 
+                                                            onclick="if(confirm('Are you sure you want to delete this purchase record?')) window.location.href='{% url 'delete_purchase' purchase.id %}'">
+                                                        <i class="bi bi-trash me-2"></i>
+                                                        Delete Purchase
+                                                    </button>
+                                                    <button type="button" class="btn btn-secondary rounded-pill" data-bs-dismiss="modal">Cancel</button>
+                                                    <button type="submit" class="btn btn-primary rounded-pill">Save Changes</button>
+                                                </div>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endfor %}
                         </div>
-                    {% endfor %}
+
+                        <!-- Pagination -->
+                        {% if purchases.has_other_pages %}
+                            <nav class="mt-4">
+                                <ul class="pagination justify-content-center">
+                                    {% if purchases.has_previous %}
+                                        <li class="page-item">
+                                            <a class="page-link rounded-start-pill" href="?page={{ purchases.previous_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}">
+                                                <i class="bi bi-chevron-left"></i>
+                                            </a>
+                                        </li>
+                                    {% endif %}
+
+                                    {% for num in purchases.paginator.page_range %}
+                                        {% if purchases.number == num %}
+                                            <li class="page-item active">
+                                                <span class="page-link">{{ num }}</span>
+                                            </li>
+                                        {% elif num > purchases.number|add:'-3' and num < purchases.number|add:'3' %}
+                                            <li class="page-item">
+                                                <a class="page-link" href="?page={{ num }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}">
+                                                    {{ num }}
+                                                </a>
+                                            </li>
+                                        {% endif %}
+                                    {% endfor %}
+
+                                    {% if purchases.has_next %}
+                                        <li class="page-item">
+                                            <a class="page-link rounded-end-pill" href="?page={{ purchases.next_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}">
+                                                <i class="bi bi-chevron-right"></i>
+                                            </a>
+                                        </li>
+                                    {% endif %}
+                                </ul>
+                            </nav>
+                        {% endif %}
+                    {% else %}
+                        <div class="text-center py-5">
+                            <i class="bi bi-bag-x text-muted" style="font-size: 3rem;"></i>
+                            <p class="mt-3 mb-0 text-muted">No purchases found</p>
+                        </div>
+                    {% endif %}
                 </div>
-            {% else %}
-                <div class="text-center py-5">
-                    <i class="bi bi-bag-check mb-4" style="font-size: 3rem; opacity: 0.5;"></i>
-                    <h4 class="fw-bold" style="font-size: 1.25rem;">No purchases recorded yet</h4>
-                    <p class="text-muted" style="font-size: 0.95rem;">Start by marking a gift idea as gifted.</p>
-                </div>
-            {% endif %}
+            </div>
         </div>
     </div>
 </div>
+{% endblock %}
 
 {% block extra_css %}
 <style>
-    /* Consistent styling */
-    .btn {
-        border-radius: 50rem;
+    .page-link {
+        color: var(--primary-color);
+        border: none;
+        padding: 0.5rem 1rem;
+        margin: 0 0.25rem;
+    }
+    
+    .page-link:hover {
+        color: var(--primary-color);
+        background-color: var(--hover-color);
+    }
+    
+    .page-item.active .page-link {
+        background-color: var(--primary-color);
+        color: white;
     }
 
-    .form-control {
-        border-radius: 0.75rem;
-    }
-
-    .modal .btn:hover {
-        transform: translateY(-1px);
-    }
-
-    .purchase-list .card {
+    .list-group-item {
         transition: all 0.2s ease-in-out;
     }
 
-    .purchase-list .card:hover {
-        transform: translateY(-1px);
-        box-shadow: 0 .3rem .5rem rgba(0,0,0,.15)!important;
+    .list-group-item:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 .3rem .5rem rgba(0,0,0,.1);
     }
 </style>
-{% endblock %}
 {% endblock %} 

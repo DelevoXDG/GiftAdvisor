@@ -14,6 +14,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from .services.ai_processor import AIProcessor
 from django.utils import timezone
+from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
 
 User = get_user_model()
 
@@ -698,10 +699,37 @@ def fetch_deepseek_models(request):
 
 @login_required
 def purchases(request):
-    """View for listing all purchase records"""
+    """View for listing all purchase records with search and pagination"""
+    search_query = request.GET.get('search', '')
+    
+    # Base queryset
     purchases = PurchaseRecord.objects.filter(user=request.user)
+    
+    # Apply search if provided
+    if search_query:
+        purchases = purchases.filter(
+            Q(gift__title__icontains=search_query) |
+            Q(recipient__name__icontains=search_query) |
+            Q(feedback__icontains=search_query)
+        )
+    
+    # Order by most recent first
+    purchases = purchases.order_by('-purchase_date')
+    
+    # Pagination
+    paginator = Paginator(purchases, 10)  # Show 10 purchases per page
+    page = request.GET.get('page')
+    
+    try:
+        purchases = paginator.page(page)
+    except PageNotAnInteger:
+        purchases = paginator.page(1)
+    except EmptyPage:
+        purchases = paginator.page(paginator.num_pages)
+    
     return render(request, 'purchases.html', {
-        'purchases': purchases
+        'purchases': purchases,
+        'search_query': search_query
     })
 
 @login_required
@@ -737,13 +765,26 @@ def record_purchase(request, gift_id):
 
 @login_required
 def update_purchase_feedback(request, purchase_id):
-    """View for updating purchase feedback"""
+    """View for updating purchase details"""
     purchase = get_object_or_404(PurchaseRecord, id=purchase_id, user=request.user)
     
     if request.method == 'POST':
         feedback = request.POST.get('feedback')
+        purchase_date = request.POST.get('purchase_date')
+        
         purchase.feedback = feedback
+        if purchase_date:
+            purchase.purchase_date = purchase_date
         purchase.save()
-        messages.success(request, 'Feedback updated successfully!')
+        
+        messages.success(request, 'Purchase details updated successfully!')
     
+    return redirect('purchases')
+
+@login_required
+def delete_purchase(request, purchase_id):
+    """View for deleting a purchase record"""
+    purchase = get_object_or_404(PurchaseRecord, id=purchase_id, user=request.user)
+    purchase.delete()
+    messages.success(request, 'Purchase record deleted successfully!')
     return redirect('purchases')
