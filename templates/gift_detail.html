@@ -40,9 +40,11 @@
                     <div class="row">
                         <!-- Image Column -->
                         <div class="col-md-4">
-                            <div class="gift-image-container rounded-4 overflow-hidden" style="aspect-ratio: 1; background: #f8f9fa;">
+                            <div class="gift-image-container rounded-4 overflow-hidden bg-light" style="aspect-ratio: 1;">
                                 {% if gift.image_url %}
-                                    <img src="{{ gift.image_url }}" alt="{{ gift.title }}" class="w-100 h-100 object-fit-cover">
+                                    <img src="{{ gift.image_url }}" 
+                                         alt="{{ gift.title }}" 
+                                         class="w-100 h-100 object-fit-contain">
                                 {% else %}
                                     <div class="w-100 h-100 d-flex align-items-center justify-content-center">
                                         <i class="bi bi-image-fill text-muted" style="font-size: 3rem; opacity: 0.5;"></i>
@@ -53,49 +55,34 @@
                         
                         <!-- Details Column -->
                         <div class="col-md-8">
-                            <div class="d-flex justify-content-between align-items-start mb-4">
-                                <div>
-                                    <h2 class="fw-bold mb-2" style="font-size: 1.5rem; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;" title="{{ gift.title }}">{{ gift.title }}</h2>
-                                    <div class="d-flex flex-wrap gap-2 mb-3" style="min-height: calc(2 * 1.5rem);">
-                                        <span class="badge {% if gift.status == 'idea' %}bg-warning{% else %}bg-info{% endif %}" style="font-size: 0.8rem;">
-                                            {{ gift.get_status_display }}
-                                        </span>
-                                        {% for tag in gift.tags.all|slice:":5" %}
-                                            <span class="badge bg-primary" style="font-size: 0.8rem;">{{ tag.name }}</span>
-                                        {% endfor %}
-                                        {% if gift.tags.count > 5 %}
-                                            <span class="badge bg-secondary" style="font-size: 0.8rem;">+{{ gift.tags.count|add:"-5" }}</span>
-                                        {% endif %}
-                                    </div>
-                                    <p class="text-primary fw-bold mb-0" style="font-size: 1.25rem;">${{ gift.price }}</p>
+                            <div class="mb-4">
+                                <h2 class="fw-bold mb-3" style="font-size: 1.5rem;">{{ gift.title }}</h2>
+                                <div class="d-flex flex-wrap gap-2 mb-3">
+                                    <span class="badge {% if gift.status == 'idea' %}bg-warning{% else %}bg-info{% endif %} rounded-pill">
+                                        {{ gift.get_status_display }}
+                                    </span>
+                                    {% for tag in gift.tags.all|slice:":5" %}
+                                        <span class="badge bg-primary rounded-pill">{{ tag.name }}</span>
+                                    {% endfor %}
+                                    {% if gift.tags.count > 5 %}
+                                        <span class="badge bg-secondary rounded-pill">+{{ gift.tags.count|add:"-5" }}</span>
+                                    {% endif %}
                                 </div>
-                                <div class="d-flex gap-2">
-                                    <form method="POST" action="{% url 'process_gift_with_ai' gift.id %}" id="processWithAIForm">
-                                        {% csrf_token %}
-                                        <button type="submit" class="btn btn-primary d-flex align-items-center gap-2">
-                                            <i class="bi bi-magic"></i>
-                                            <span>Process with AI</span>
-                                        </button>
-                                    </form>
-                                    <button class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#editGiftModal">
-                                        <i class="bi bi-pencil me-2"></i>
-                                        Edit Details
-                                    </button>
-                                </div>
+                                <p class="text-primary fw-bold mb-0" style="font-size: 1.25rem;">${{ gift.price }}</p>
                             </div>
 
                             <div class="gift-details">
                                 {% if gift.description %}
                                     <div class="mb-3">
-                                        <h6 class="fw-bold mb-2" style="font-size: 0.9rem;">Description</h6>
-                                        <p class="mb-0" style="font-size: 0.95rem;">{{ gift.description }}</p>
+                                        <h6 class="text-muted mb-2">Description</h6>
+                                        <p class="mb-0">{{ gift.description }}</p>
                                     </div>
                                 {% endif %}
 
                                 {% if gift.url %}
                                     <div class="mb-3">
-                                        <h6 class="fw-bold mb-2" style="font-size: 0.9rem;">Link</h6>
-                                        <a href="{{ gift.url }}" target="_blank" class="text-decoration-none d-inline-flex align-items-center gap-2" style="font-size: 0.95rem;">
+                                        <h6 class="text-muted mb-2">Link</h6>
+                                        <a href="{{ gift.url }}" target="_blank" class="text-decoration-none d-inline-flex align-items-center gap-2">
                                             <i class="bi bi-link-45deg"></i>
                                             <span>View on website</span>
                                             <i class="bi bi-box-arrow-up-right"></i>
@@ -105,18 +92,18 @@
 
                                 {% if gift.notes %}
                                     <div class="mb-3">
-                                        <h6 class="fw-bold mb-2" style="font-size: 0.9rem;">Notes</h6>
-                                        <p class="mb-0" style="font-size: 0.95rem;">{{ gift.notes }}</p>
+                                        <h6 class="text-muted mb-2">Notes</h6>
+                                        <p class="mb-0">{{ gift.notes }}</p>
                                     </div>
                                 {% endif %}
 
-                                {% if gift.recipients.all %}
-                                    <div>
-                                        <h6 class="fw-bold mb-2" style="font-size: 0.9rem;">Recipients</h6>
+                                {% if gift.recipients.exists %}
+                                    <div class="mb-4">
+                                        <h6 class="text-muted mb-2">Recipients</h6>
                                         <div class="d-flex flex-wrap gap-2">
                                             {% for recipient in gift.recipients.all %}
                                                 <a href="{% url 'recipient_profile' recipient.id %}" class="text-decoration-none">
-                                                    <span class="badge bg-secondary" style="font-size: 0.8rem;">
+                                                    <span class="badge bg-secondary rounded-pill">
                                                         {{ recipient.name }} ({{ recipient.get_relationship_display }})
                                                     </span>
                                                 </a>
@@ -124,6 +111,21 @@
                                         </div>
                                     </div>
                                 {% endif %}
+
+                                <!-- Action Buttons -->
+                                <div class="d-flex flex-wrap gap-2 mt-4 pt-3 border-top justify-content-end">
+                                    <button class="btn btn-outline-primary px-4" data-bs-toggle="modal" data-bs-target="#editGiftModal">
+                                        <i class="bi bi-pencil me-2"></i>
+                                        Edit Details
+                                    </button>
+                                    <form method="POST" action="{% url 'process_gift_with_ai' gift.id %}" id="processWithAIForm" class="d-inline-block">
+                                        {% csrf_token %}
+                                        <button type="submit" class="btn btn-primary px-4">
+                                            <i class="bi bi-magic me-2"></i>
+                                            Process with AI
+                                        </button>
+                                    </form>
+                                </div>
                             </div>
                         </div>
                     </div>
