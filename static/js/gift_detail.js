@@ -1,5 +1,6 @@
 class GiftDetail {
-    constructor()         console.log('GiftDetail initializing...'); // Debug log
+    constructor() {
+        console.log('GiftDetail initializing...');
         
         // Forms and modals
         this.editGiftForm = document.getElementById('editGiftForm');
