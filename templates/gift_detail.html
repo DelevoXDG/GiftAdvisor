@@ -310,7 +310,7 @@
                 const data = await response.json();
                 
                 if (response.ok) {
-                    // Update the gift data
+                    // Update the gift data silently
                     const form = document.getElementById('editGiftForm');
                     
                     if (data.suggestions.title) {
@@ -348,8 +348,8 @@
                     document.querySelector('.toast-container').appendChild(successToast);
                     new bootstrap.Toast(successToast).show();
                     
-                    // Show the edit modal with updates
-                    bootstrap.Modal.getOrCreateInstance(document.getElementById('editGiftModal')).show();
+                    // Refresh the page to show updated data
+                    window.location.reload();
                 } else {
                     // Show error message
                     const errorToast = bootstrap.Toast.getOrCreateInstance(document.getElementById('errorToast'));
