@@ -59,6 +59,7 @@ class GiftIdea(models.Model):
     recipients = models.ManyToManyField(Recipient, related_name='gift_ideas')
     occasions = models.ManyToManyField(Occasion, related_name='gift_ideas', blank=True)
     tags = models.ManyToManyField(Tag, related_name='gift_ideas')
+    notes = models.CharField(max_length=400, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     
