@@ -74,7 +74,38 @@
                     </div>
                 </div>
 
-                <form id="filterForm" class="mb-4">
+                <!-- Search Form -->
+                <form class="mb-4" method="GET">
+                    <div class="input-group">
+                        <input type="text" 
+                               name="search" 
+                               class="form-control rounded-start-pill" 
+                               placeholder="Search gift ideas..."
+                               value="{{ request.GET.search }}">
+                        <!-- Preserve filter parameters -->
+                        {% if request.GET.price_range %}
+                            <input type="hidden" name="price_range" value="{{ request.GET.price_range }}">
+                        {% endif %}
+                        {% if request.GET.recipient %}
+                            <input type="hidden" name="recipient" value="{{ request.GET.recipient }}">
+                        {% endif %}
+                        {% if request.GET.status %}
+                            <input type="hidden" name="status" value="{{ request.GET.status }}">
+                        {% endif %}
+                        {% if request.GET.sort %}
+                            <input type="hidden" name="sort" value="{{ request.GET.sort }}">
+                        {% endif %}
+                        <button class="btn btn-primary rounded-end-pill" type="submit">
+                            <i class="bi bi-search"></i>
+                        </button>
+                    </div>
+                </form>
+
+                <form id="filterForm" class="mb-4" method="GET">
+                    <!-- Preserve search query -->
+                    {% if request.GET.search %}
+                        <input type="hidden" name="search" value="{{ request.GET.search }}">
+                    {% endif %}
                     <div class="row g-3">
                         <div class="col-md-3">
                             <label class="form-label">Price Range</label>
@@ -98,17 +129,6 @@
                             </select>
                         </div>
                         <div class="col-md-3">
-                            <label class="form-label">Tags</label>
-                            <select class="form-select" name="tag">
-                                <option value="">All Tags</option>
-                                {% for tag in tags %}
-                                    <option value="{{ tag.name }}" {% if current_filters.tag == tag.name %}selected{% endif %}>
-                                        {{ tag.name }}
-                                    </option>
-                                {% endfor %}
-                            </select>
-                        </div>
-                        <div class="col-md-3">
                             <label class="form-label">Status</label>
                             <select class="form-select" name="status">
                                 <option value="">All Statuses</option>
@@ -119,85 +139,114 @@
                                 {% endfor %}
                             </select>
                         </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Sort By</label>
+                            <select class="form-select" name="sort">
+                                <option value="recent" {% if current_filters.sort == 'recent' %}selected{% endif %}>Most Recent</option>
+                                <option value="price_low" {% if current_filters.sort == 'price_low' %}selected{% endif %}>Price: Low to High</option>
+                                <option value="price_high" {% if current_filters.sort == 'price_high' %}selected{% endif %}>Price: High to Low</option>
+                            </select>
+                        </div>
                     </div>
                 </form>
 
+                <!-- Gift List/Grid -->
                 {% if gifts %}
-                    <!-- Grid View -->
-                    <div class="gift-grid">
+                    <div id="giftList" class="gift-list" style="display: none;">
                         {% for gift in gifts %}
-                        <a href="{% url 'gift_detail' gift.id %}" class="text-decoration-none text-reset">
-                            <div class="gift-card">
-                                <div class="empty-img">
-                                    {% if gift.image_url %}
-                                        <img src="{{ gift.image_url }}" alt="{{ gift.title }}" class="gift-image">
-                                    {% else %}
-                                        <div class="d-flex align-items-center justify-content-center h-100">
-                                            <i class="bi bi-image-fill text-muted" style="font-size: 2rem; opacity: 0.5;"></i>
-                                        </div>
-                                    {% endif %}
-                                </div>
-                                <div class="p-4">
-                                    <h5 class="fw-bold mb-2" style="font-size: 1.1rem; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">{{ gift.title }}</h5>
-                                    <p class="text-primary fw-bold mb-3" style="font-size: 0.95rem;">${{ gift.price }}</p>
-                                    <div class="d-flex flex-wrap gap-2">
-                                        <span class="badge {% if gift.status == 'idea' %}bg-warning{% else %}bg-info{% endif %}" style="font-size: 0.8rem;">
-                                            {{ gift.get_status_display }}
-                                        </span>
-                                        {% for tag in gift.tags.all|slice:":3" %}
-                                            <span class="badge bg-primary" style="font-size: 0.8rem;">{{ tag.name }}</span>
-                                        {% endfor %}
-                                        {% if gift.tags.count > 3 %}
-                                            <span class="badge bg-secondary" style="font-size: 0.8rem;">+{{ gift.tags.count|add:"-3" }}</span>
+                            <a href="{% url 'gift_detail' gift.id %}" class="text-decoration-none">
+                                <div class="gift-item shadow-sm hover-shadow-md">
+                                    <div class="empty-img">
+                                        {% if gift.image_url %}
+                                            <img src="{{ gift.image_url }}" alt="{{ gift.title }}" class="gift-image">
+                                        {% else %}
+                                            <i class="bi bi-image-fill"></i>
                                         {% endif %}
                                     </div>
+                                    <div class="flex-grow-1">
+                                        <h5 class="gift-title text-truncate mb-2">{{ gift.title }}</h5>
+                                        <p class="gift-price text-primary mb-2">${{ gift.price }}</p>
+                                        <div class="d-flex flex-wrap gap-2">
+                                            <span class="badge {% if gift.status == 'idea' %}bg-warning{% else %}bg-info{% endif %}">
+                                                {{ gift.get_status_display }}
+                                            </span>
+                                            {% for tag in gift.tags.all|slice:":3" %}
+                                                <span class="badge bg-primary">{{ tag.name }}</span>
+                                            {% endfor %}
+                                        </div>
+                                    </div>
                                 </div>
-                            </div>
-                        </a>
+                            </a>
+                        {% endfor %}
+                    </div>
+                    <div id="giftGrid" class="gift-grid">
+                        {% for gift in gifts %}
+                            <a href="{% url 'gift_detail' gift.id %}" class="text-decoration-none">
+                                <div class="gift-card">
+                                    <div class="empty-img">
+                                        {% if gift.image_url %}
+                                            <img src="{{ gift.image_url }}" alt="{{ gift.title }}" class="gift-image">
+                                        {% else %}
+                                            <i class="bi bi-image-fill"></i>
+                                        {% endif %}
+                                    </div>
+                                    <div class="p-4">
+                                        <h5 class="gift-title text-truncate mb-2">{{ gift.title }}</h5>
+                                        <p class="gift-price text-primary mb-2">${{ gift.price }}</p>
+                                        <div class="d-flex flex-wrap gap-2">
+                                            <span class="badge {% if gift.status == 'idea' %}bg-warning{% else %}bg-info{% endif %}">
+                                                {{ gift.get_status_display }}
+                                            </span>
+                                            {% for tag in gift.tags.all|slice:":3" %}
+                                                <span class="badge bg-primary">{{ tag.name }}</span>
+                                            {% endfor %}
+                                        </div>
+                                    </div>
+                                </div>
+                            </a>
                         {% endfor %}
                     </div>
 
-                    <!-- List View -->
-                    <div class="gift-list d-none">
-                        {% for gift in gifts %}
-                        <a href="{% url 'gift_detail' gift.id %}" class="text-decoration-none text-reset">
-                            <div class="gift-item shadow-sm clickable">
-                                <div class="empty-img">
-                                    {% if gift.image_url %}
-                                        <img src="{{ gift.image_url }}" alt="{{ gift.title }}" class="gift-image">
-                                    {% else %}
-                                        <div class="d-flex align-items-center justify-content-center h-100">
-                                            <i class="bi bi-image text-muted" style="opacity: 0.5;"></i>
-                                        </div>
+                    <!-- Pagination -->
+                    {% if gifts.has_other_pages %}
+                        <nav class="mt-4">
+                            <ul class="pagination justify-content-center">
+                                {% if gifts.has_previous %}
+                                    <li class="page-item">
+                                        <a class="page-link rounded-start-pill" href="?page={{ gifts.previous_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.price_range %}&price_range={{ request.GET.price_range }}{% endif %}{% if request.GET.recipient %}&recipient={{ request.GET.recipient }}{% endif %}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}{% if request.GET.sort %}&sort={{ request.GET.sort }}{% endif %}">
+                                            <i class="bi bi-chevron-left"></i>
+                                        </a>
+                                    </li>
+                                {% endif %}
+
+                                {% for num in gifts.paginator.page_range %}
+                                    {% if gifts.number == num %}
+                                        <li class="page-item active">
+                                            <span class="page-link">{{ num }}</span>
+                                        </li>
+                                    {% elif num > gifts.number|add:'-3' and num < gifts.number|add:'3' %}
+                                        <li class="page-item">
+                                            <a class="page-link" href="?page={{ num }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.price_range %}&price_range={{ request.GET.price_range }}{% endif %}{% if request.GET.recipient %}&recipient={{ request.GET.recipient }}{% endif %}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}{% if request.GET.sort %}&sort={{ request.GET.sort }}{% endif %}">
+                                                {{ num }}
+                                            </a>
+                                        </li>
                                     {% endif %}
-                                </div>
-                                <div class="flex-grow-1">
-                                    <div class="d-flex justify-content-between align-items-start mb-2">
-                                        <div>
-                                            <h5 class="mb-1" style="font-size: 1.1rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 300px;">{{ gift.title }}</h5>
-                                            <p class="text-muted mb-2" style="font-size: 0.95rem;">${{ gift.price }}</p>
-                                        </div>
-                                        <span class="badge bg-{% if gift.status == 'idea' %}warning{% else %}info{% endif %}">
-                                            {{ gift.get_status_display }}
-                                        </span>
-                                    </div>
-                                    <div>
-                                        {% for tag in gift.tags.all %}
-                                            <span class="badge bg-primary me-1">{{ tag.name }}</span>
-                                        {% endfor %}
-                                    </div>
-                                </div>
-                            </div>
-                        </a>
-                        {% endfor %}
-                    </div>
+                                {% endfor %}
+
+                                {% if gifts.has_next %}
+                                    <li class="page-item">
+                                        <a class="page-link rounded-end-pill" href="?page={{ gifts.next_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.price_range %}&price_range={{ request.GET.price_range }}{% endif %}{% if request.GET.recipient %}&recipient={{ request.GET.recipient }}{% endif %}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}{% if request.GET.sort %}&sort={{ request.GET.sort }}{% endif %}">
+                                            <i class="bi bi-chevron-right"></i>
+                                        </a>
+                                    </li>
+                                {% endif %}
+                            </ul>
+                        </nav>
+                    {% endif %}
                 {% else %}
                     <div class="text-center py-5">
-                        <div class="text-center">
-                            <i class="bi bi-gift mb-4" style="font-size: 3rem; opacity: 0.5;"></i>
-                            <h4 class="fw-bold" style="font-size: 1.25rem;">No gift ideas yet</h4>
-                            <p class="text-muted" style="font-size: 0.95rem;">Add your first gift idea.</p>
-                        </div>
+                        <i class="bi bi-gift text-muted" style="font-size: 3rem;"></i>
+                        <p class="mt-3 mb-0 text-muted">No gift ideas found</p>
                     </div>
                 {% endif %}
             </div>

@@ -38,10 +38,19 @@ class IndexView(TemplateView):
                 if test_user:
                     gifts = GiftIdea.objects.filter(user=test_user)
             
+            # Apply search
+            search_query = self.request.GET.get('search')
+            if search_query:
+                gifts = gifts.filter(
+                    Q(title__icontains=search_query) |
+                    Q(description__icontains=search_query) |
+                    Q(tags__name__icontains=search_query) |
+                    Q(recipients__name__icontains=search_query)
+                ).distinct()
+            
             # Apply filters
             price_range = self.request.GET.get('price_range')
             recipient_filter = self.request.GET.get('recipient')
-            tag_filter = self.request.GET.get('tag')
             status_filter = self.request.GET.get('status')
             
             if price_range:
@@ -57,12 +66,18 @@ class IndexView(TemplateView):
             
             if recipient_filter:
                 gifts = gifts.filter(recipients__relationship=recipient_filter)
-            
-            if tag_filter:
-                gifts = gifts.filter(tags__name=tag_filter)
                 
             if status_filter:
                 gifts = gifts.filter(status=status_filter)
+            
+            # Apply sorting
+            sort_by = self.request.GET.get('sort', 'recent')
+            if sort_by == 'price_low':
+                gifts = gifts.order_by('price')
+            elif sort_by == 'price_high':
+                gifts = gifts.order_by('-price')
+            else:  # recent
+                gifts = gifts.order_by('-created_at')
             
             # Get filter options
             price_stats = gifts.aggregate(
@@ -70,8 +85,19 @@ class IndexView(TemplateView):
                 max_price=Max('price')
             )
             
+            # Apply pagination
+            page = self.request.GET.get('page', 1)
+            paginator = Paginator(gifts, 12)  # Show 12 gifts per page
+            
+            try:
+                gifts = paginator.page(page)
+            except PageNotAnInteger:
+                gifts = paginator.page(1)
+            except EmptyPage:
+                gifts = paginator.page(paginator.num_pages)
+            
             context.update({
-                'gifts': gifts.distinct().order_by('-created_at'),
+                'gifts': gifts,
                 'tags': Tag.objects.filter(gift_ideas__user=user).distinct(),
                 'recipients': Recipient.objects.filter(user=user),
                 'price_stats': price_stats,
@@ -80,8 +106,9 @@ class IndexView(TemplateView):
                 'current_filters': {
                     'price_range': price_range,
                     'recipient': recipient_filter,
-                    'tag': tag_filter,
-                    'status': status_filter
+                    'status': status_filter,
+                    'sort': sort_by,
+                    'search': search_query
                 }
             })
             
