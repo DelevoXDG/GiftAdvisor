@@ -118,25 +118,18 @@ class Dashboard {
 
     async handleQuickAdd(e) {
         e.preventDefault();
-		if (this.isExtracting) return;
-		
-		const url = this.quickAddInput.value.trim();
-		if (!url) return;
-		
+        if (this.isExtracting) return;
+        
+        const url = this.quickAddInput.value.trim();
+        if (!url) return;
+        
         this.isExtracting = true;
-        
         this.quickAddInput.disabled = true;
-		this.quickAddButton.disabled = true;
-		
-		        // Cancel any ongoing extraction
-        if (this.currentExtraction) {
-            this.currentExtraction.abort();
-        }
+        this.quickAddButton.disabled = true;
         
-        // Create new AbortController for this extraction
-        const controller = new AbortController();
-        this.currentExtraction = controller;
-      
+        // Show processing toast
+        const processingToast = bootstrap.Toast.getOrCreateInstance(document.getElementById('processingToast'));
+        processingToast.show();
         
         try {
             const response = await fetch('/api/extract-metadata/', {
@@ -145,45 +138,68 @@ class Dashboard {
                     'Content-Type': 'application/json',
                     'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
                 },
-                body: JSON.stringify({
-                    url: this.quickAddInput.value
-				}),
-				signal: controller.signal
-			});
-			
-            // Only proceed if this is still the current extraction
-            if (this.currentExtraction === controller) {
-				const data = await response.json();
-				
-				if (response.ok) {
-					this.addGiftForm.reset();
-					
-					this.addGiftForm.querySelector('input[name="title"]').value = data.title || '';
-					this.addGiftForm.querySelector('textarea[name="description"]').value = data.description || '';
-					this.addGiftForm.querySelector('input[name="price"]').value = data.price || '';
-					this.addGiftForm.querySelector('input[name="url"]').value = data.url || '';
-					this.addGiftForm.querySelector('input[name="image_url"]').value = data.image_url || '';
-					
-					this.bsModal.show();
-					this.quickAddForm.reset();
-				} else {
-					alert(data.error || 'Failed to extract metadata');
-				}
+                body: JSON.stringify({ url: url })
+            });
+            
+            const data = await response.json();
+            
+            if (response.ok) {
+                // Add the gift
+                const giftResponse = await fetch('/api/gifts/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                    },
+                    body: JSON.stringify(data)
+                });
+                
+                const giftData = await giftResponse.json();
+                
+                if (giftResponse.ok) {
+                    // Show success message
+                    const successToast = document.createElement('div');
+                    successToast.className = 'toast';
+                    successToast.innerHTML = `
+                        <div class="toast-header bg-success text-white">
+                            <i class="bi bi-check-circle me-2"></i>
+                            <strong class="me-auto">Success</strong>
+                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast"></button>
+                        </div>
+                        <div class="toast-body">
+                            Gift idea added successfully
+                        </div>
+                    `;
+                    document.querySelector('.toast-container').appendChild(successToast);
+                    new bootstrap.Toast(successToast).show();
+                    
+                    // Reset form
+                    this.quickAddForm.reset();
+                    
+                    // Refresh the page after a short delay
+                    setTimeout(() => window.location.reload(), 1000);
+                } else {
+                    const errorToast = bootstrap.Toast.getOrCreateInstance(document.getElementById('errorToast'));
+                    document.getElementById('errorToastMessage').textContent = giftData.error || 'Failed to add gift';
+                    errorToast.show();
+                }
+            } else {
+                const errorToast = bootstrap.Toast.getOrCreateInstance(document.getElementById('errorToast'));
+                document.getElementById('errorToastMessage').textContent = data.error || 'Failed to extract metadata';
+                errorToast.show();
             }
-		} catch (error) {
-			if (error.name !== 'AbortError') {
-				console.error('Error:', error);
-				alert('Failed to process the URL');
-			}
-		} finally {
-			if (this.currentExtraction === controller) {
-				this.currentExtraction = null;
-				this.isExtracting = false;
-				this.quickAddInput.disabled = false;
-				this.quickAddButton.disabled = false;
-				this.updateQuickAddButtonState();
-			}
-		}
+        } catch (error) {
+            console.error('Error:', error);
+            const errorToast = bootstrap.Toast.getOrCreateInstance(document.getElementById('errorToast'));
+            document.getElementById('errorToastMessage').textContent = 'Failed to process the URL';
+            errorToast.show();
+        } finally {
+            this.isExtracting = false;
+            this.quickAddInput.disabled = false;
+            this.quickAddButton.disabled = false;
+            this.updateQuickAddButtonState();
+            processingToast.hide();
+        }
     }
 
     handleModalHidden() {

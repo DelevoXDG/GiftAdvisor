@@ -77,22 +77,15 @@ class GiftDetail {
     }
 
     async handleAIProcess() {
-        console.log('handleAIProcess called'); // Debug log
-        
-        if (this.isProcessing) {
-            console.log('Already processing, returning...'); // Debug log
-            return;
-        }
-        
+        if (this.isProcessing) return;
         this.isProcessing = true;
-        this.processWithAIBtn.disabled = true; // Disable button while processing
+        this.processWithAIBtn.disabled = true;
         
         // Show processing toast
-        const toast = bootstrap.Toast.getOrCreateInstance(document.getElementById('processingToast'));
-        toast.show();
+        const processingToast = bootstrap.Toast.getOrCreateInstance(document.getElementById('processingToast'));
+        processingToast.show();
         
         const giftId = window.location.pathname.split('/').filter(Boolean).pop();
-        console.log('Processing gift ID:', giftId); // Debug log
         
         try {
             const response = await fetch(`/api/gifts/${giftId}/process/`, {
@@ -104,48 +97,40 @@ class GiftDetail {
             });
             
             const data = await response.json();
-            console.log('AI Process response:', data); // Debug log
             
             if (response.ok) {
-                // Update the form with AI suggestions
-                const form = this.editGiftForm;
+                // Show success message
+                const successToast = document.createElement('div');
+                successToast.className = 'toast';
+                successToast.innerHTML = `
+                    <div class="toast-header bg-success text-white">
+                        <i class="bi bi-check-circle me-2"></i>
+                        <strong class="me-auto">Success</strong>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast"></button>
+                    </div>
+                    <div class="toast-body">
+                        ${data.message}
+                    </div>
+                `;
+                document.querySelector('.toast-container').appendChild(successToast);
+                new bootstrap.Toast(successToast).show();
                 
-                // Update tags
-                if (data.tags) {
-                    const tagSelect = form.querySelector('[name="tags"]');
-                    Array.from(tagSelect.options).forEach(option => {
-                        option.selected = data.tags.includes(option.value);
-                    });
-                }
-                
-                // Update recipients
-                if (data.recipients) {
-                    const recipientSelect = form.querySelector('[name="recipients"]');
-                    Array.from(recipientSelect.options).forEach(option => {
-                        option.selected = data.recipients.includes(option.value);
-                    });
-                }
-                
-                // Show the edit modal with the updates
-                this.editBsModal.show();
+                // Refresh the page to show updated data
+                window.location.reload();
             } else {
-                // Show error message
                 const errorToast = bootstrap.Toast.getOrCreateInstance(document.getElementById('errorToast'));
                 document.getElementById('errorToastMessage').textContent = data.error || 'Failed to process with AI';
                 errorToast.show();
             }
         } catch (error) {
-            console.error('AI Process error:', error); // Debug log
-            // Show error message
+            console.error('AI Process error:', error);
             const errorToast = bootstrap.Toast.getOrCreateInstance(document.getElementById('errorToast'));
             document.getElementById('errorToastMessage').textContent = 'Failed to process with AI';
             errorToast.show();
         } finally {
             this.isProcessing = false;
-            this.processWithAIBtn.disabled = false; // Re-enable button
-            // Hide processing toast
-            const toast = bootstrap.Toast.getOrCreateInstance(document.getElementById('processingToast'));
-            toast.hide();
+            this.processWithAIBtn.disabled = false;
+            processingToast.hide();
         }
     }
 
