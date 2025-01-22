@@ -815,3 +815,19 @@ def delete_purchase(request, purchase_id):
     purchase.delete()
     messages.success(request, 'Purchase record deleted successfully!')
     return redirect('purchases')
+
+@login_required
+def delete_gift(request, gift_id):
+    """View for deleting a gift idea"""
+    gift = get_object_or_404(GiftIdea, id=gift_id, user=request.user)
+    gift.delete()
+    messages.success(request, 'Gift idea deleted successfully!')
+    return redirect('index')
+
+@login_required
+def delete_recipient(request, recipient_id):
+    """View for deleting a recipient"""
+    recipient = get_object_or_404(Recipient, id=recipient_id, user=request.user)
+    recipient.delete()
+    messages.success(request, 'Recipient deleted successfully!')
+    return redirect('recipients')
