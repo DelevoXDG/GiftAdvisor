@@ -114,13 +114,13 @@
 
                                 <!-- Action Buttons -->
                                 <div class="d-flex flex-wrap gap-2 mt-4 pt-3 border-top justify-content-end">
-                                    <button class="btn btn-outline-primary px-4" data-bs-toggle="modal" data-bs-target="#editGiftModal">
+                                    <button class="btn btn-outline-primary px-4 rounded-pill shadow-sm hover-shadow-md" data-bs-toggle="modal" data-bs-target="#editGiftModal">
                                         <i class="bi bi-pencil me-2"></i>
                                         Edit Details
                                     </button>
                                     <form method="POST" action="{% url 'process_gift_with_ai' gift.id %}" id="processWithAIForm" class="d-inline-block">
                                         {% csrf_token %}
-                                        <button type="submit" class="btn btn-primary px-4">
+                                        <button type="submit" class="btn btn-primary px-4 rounded-pill shadow-sm hover-shadow-md">
                                             <i class="bi bi-magic me-2"></i>
                                             Process with AI
                                         </button>
@@ -372,3 +372,13 @@
 </script>
 {% endblock %}
 {% endblock %} 
+
+<style>
+    .hover-shadow-md {
+        transition: all 0.2s ease-in-out;
+    }
+    .hover-shadow-md:hover {
+        box-shadow: 0 .3rem .5rem rgba(0,0,0,.15)!important;
+        transform: translateY(-1px);
+    }
+</style> 
