@@ -7,18 +7,22 @@
     <div class="sidebar mt-4">
         <div class="mb-5">
             <h5 class="text-muted mb-3">Sections</h5>
-            <a href="{% url 'index' %}" class="sidebar-link active">
+            <a href="{% url 'index' %}" class="sidebar-link {% if request.resolver_match.url_name == 'index' %}active{% endif %}">
                 <i class="bi bi-gift"></i>
                 <span>Gift Ideas</span>
             </a>
-            <a href="{% url 'recipients' %}" class="sidebar-link">
+            <a href="{% url 'recipients' %}" class="sidebar-link {% if request.resolver_match.url_name == 'recipients' or request.resolver_match.url_name == 'recipient_profile' %}active{% endif %}">
                 <i class="bi bi-people"></i>
                 <span>Recipients</span>
+            </a>
+            <a href="{% url 'purchases' %}" class="sidebar-link {% if request.resolver_match.url_name == 'purchases' or request.resolver_match.url_name == 'record_purchase' or request.resolver_match.url_name == 'update_purchase_feedback' %}active{% endif %}">
+                <i class="bi bi-bag-check"></i>
+                <span>Purchases</span>
             </a>
         </div>
         <div>
             <h5 class="text-muted mb-3">Settings</h5>
-            <a href="#" class="sidebar-link">
+            <a href="{% url 'preferences' %}" class="sidebar-link {% if request.resolver_match.url_name == 'preferences' %}active{% endif %}">
                 <i class="bi bi-gear"></i>
                 <span>Preferences</span>
             </a>
@@ -118,6 +122,12 @@
                                         <i class="bi bi-pencil me-2"></i>
                                         Edit Details
                                     </button>
+                                    {% if gift.status != 'gifted' %}
+                                        <button class="btn btn-success px-4 rounded-pill shadow-sm hover-shadow-md" data-bs-toggle="modal" data-bs-target="#recordPurchaseModal">
+                                            <i class="bi bi-bag-check me-2"></i>
+                                            Mark as Gifted
+                                        </button>
+                                    {% endif %}
                                     <form method="POST" action="{% url 'process_gift_with_ai' gift.id %}" id="processWithAIForm" class="d-inline-block">
                                         {% csrf_token %}
                                         <button type="submit" class="btn btn-primary px-4 rounded-pill shadow-sm hover-shadow-md">
@@ -251,6 +261,44 @@
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
                 <button type="button" class="btn btn-primary" id="saveGiftBtn">Save Changes</button>
             </div>
+        </div>
+    </div>
+</div>
+
+<!-- Record Purchase Modal -->
+<div class="modal fade" id="recordPurchaseModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Record Gift Purchase</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form action="{% url 'record_purchase' gift.id %}" method="POST">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Recipient</label>
+                        <select name="recipient" class="form-select" required>
+                            <option value="">Select recipient...</option>
+                            {% for recipient in gift.recipients.all %}
+                                <option value="{{ recipient.id }}">{{ recipient.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Purchase Date</label>
+                        <input type="date" name="purchase_date" class="form-control" value="{{ today|date:'Y-m-d' }}">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Feedback (Optional)</label>
+                        <textarea name="feedback" class="form-control" rows="3" placeholder="Add any notes about the gift..."></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary rounded-pill" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-success rounded-pill">Record Purchase</button>
+                </div>
+            </form>
         </div>
     </div>
 </div>

@@ -1,6 +1,7 @@
 from django.db import models
 from django.conf import settings
 from django.core.exceptions import ValidationError
+from django.utils import timezone
 
 class Tag(models.Model):
     """Model for categorizing gifts and recipients."""
@@ -83,3 +84,26 @@ class UserPreferences(models.Model):
     
     def __str__(self):
         return f"Preferences for {self.user.email}"
+
+class PurchaseRecord(models.Model):
+    """Model for tracking gift purchases and feedback."""
+    gift = models.ForeignKey(GiftIdea, on_delete=models.CASCADE, related_name='purchases')
+    recipient = models.ForeignKey(Recipient, on_delete=models.CASCADE, related_name='received_gifts')
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    purchase_date = models.DateField(default=timezone.now)
+    feedback = models.TextField(blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['-purchase_date']
+
+    def save(self, *args, **kwargs):
+        # Update gift status to 'gifted' when creating a purchase record
+        if not self.pk:  # Only on creation
+            self.gift.status = 'gifted'
+            self.gift.save()
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return f"{self.gift.title} - Gifted to {self.recipient.name} on {self.purchase_date}"

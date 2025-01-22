@@ -1,0 +1,126 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="d-flex">
+    <!-- Left Sidebar -->
+    <div class="sidebar mt-4">
+        <div class="mb-5">
+            <h5 class="text-muted mb-3">Sections</h5>
+            <a href="{% url 'index' %}" class="sidebar-link">
+                <i class="bi bi-gift"></i>
+                <span>Gift Ideas</span>
+            </a>
+            <a href="{% url 'recipients' %}" class="sidebar-link">
+                <i class="bi bi-people"></i>
+                <span>Recipients</span>
+            </a>
+            <a href="{% url 'purchases' %}" class="sidebar-link active">
+                <i class="bi bi-bag-check"></i>
+                <span>Purchases</span>
+            </a>
+        </div>
+        <div>
+            <h5 class="text-muted mb-3">Settings</h5>
+            <a href="{% url 'preferences' %}" class="sidebar-link">
+                <i class="bi bi-gear"></i>
+                <span>Preferences</span>
+            </a>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <div class="container py-4">
+            <h2 class="fw-bold mb-4" style="font-size: 1.75rem;">Purchase History</h2>
+
+            {% if purchases %}
+                <div class="purchase-list">
+                    {% for purchase in purchases %}
+                        <div class="card rounded-4 border-0 shadow-sm mb-3">
+                            <div class="card-body p-4">
+                                <div class="d-flex justify-content-between align-items-start">
+                                    <div>
+                                        <h5 class="fw-bold mb-2">{{ purchase.gift.title }}</h5>
+                                        <p class="text-muted mb-2">
+                                            Gifted to {{ purchase.recipient.name }}
+                                            <span class="mx-2">•</span>
+                                            {{ purchase.purchase_date|date:"M j, Y" }}
+                                        </p>
+                                        {% if purchase.feedback %}
+                                            <p class="mb-0"><small class="text-muted">{{ purchase.feedback }}</small></p>
+                                        {% endif %}
+                                    </div>
+                                    <button class="btn btn-outline-primary rounded-pill" 
+                                            data-bs-toggle="modal" 
+                                            data-bs-target="#editFeedbackModal{{ purchase.id }}">
+                                        <i class="bi bi-pencil me-2"></i>
+                                        Edit Feedback
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Edit Feedback Modal -->
+                        <div class="modal fade" id="editFeedbackModal{{ purchase.id }}" tabindex="-1">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title">Edit Feedback</h5>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                    </div>
+                                    <form action="{% url 'update_purchase_feedback' purchase.id %}" method="POST">
+                                        {% csrf_token %}
+                                        <div class="modal-body">
+                                            <div class="mb-3">
+                                                <label class="form-label">Feedback</label>
+                                                <textarea name="feedback" class="form-control" rows="3">{{ purchase.feedback }}</textarea>
+                                            </div>
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-secondary rounded-pill" data-bs-dismiss="modal">Cancel</button>
+                                            <button type="submit" class="btn btn-primary rounded-pill">Save Changes</button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="text-center py-5">
+                    <i class="bi bi-bag-check mb-4" style="font-size: 3rem; opacity: 0.5;"></i>
+                    <h4 class="fw-bold" style="font-size: 1.25rem;">No purchases recorded yet</h4>
+                    <p class="text-muted" style="font-size: 0.95rem;">Start by marking a gift idea as gifted.</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+{% block extra_css %}
+<style>
+    /* Consistent styling */
+    .btn {
+        border-radius: 50rem;
+    }
+
+    .form-control {
+        border-radius: 0.75rem;
+    }
+
+    .modal .btn:hover {
+        transform: translateY(-1px);
+    }
+
+    .purchase-list .card {
+        transition: all 0.2s ease-in-out;
+    }
+
+    .purchase-list .card:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 .3rem .5rem rgba(0,0,0,.15)!important;
+    }
+</style>
+{% endblock %}
+{% endblock %} 

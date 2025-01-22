@@ -37,7 +37,10 @@ from core.views import (
     update_deepseek_model,
     fetch_openai_models,
     fetch_deepseek_models,
-    process_gift_with_ai
+    process_gift_with_ai,
+    purchases,
+    record_purchase,
+    update_purchase_feedback
 )
 
 urlpatterns = [
@@ -47,6 +50,9 @@ urlpatterns = [
     path('recipients/<int:recipient_id>/', RecipientProfileView.as_view(), name='recipient_profile'),
     path('gifts/<int:gift_id>/', gift_detail, name='gift_detail'),
     path('preferences/', PreferencesView.as_view(), name='preferences'),
+    path('purchases/', purchases, name='purchases'),
+    path('gifts/<int:gift_id>/purchase/', record_purchase, name='record_purchase'),
+    path('purchases/<int:purchase_id>/feedback/', update_purchase_feedback, name='update_purchase_feedback'),
     path('accounts/', include('allauth.urls')),
     
     # API endpoints

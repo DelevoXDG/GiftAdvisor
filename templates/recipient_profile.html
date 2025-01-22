@@ -52,18 +52,22 @@
     <div class="sidebar mt-4">
         <div class="mb-5">
             <h5 class="text-muted mb-3">Sections</h5>
-            <a href="{% url 'index' %}" class="sidebar-link">
+            <a href="{% url 'index' %}" class="sidebar-link {% if request.resolver_match.url_name == 'index' %}active{% endif %}">
                 <i class="bi bi-gift"></i>
                 <span>Gift Ideas</span>
             </a>
-            <a href="{% url 'recipients' %}" class="sidebar-link active">
+            <a href="{% url 'recipients' %}" class="sidebar-link {% if request.resolver_match.url_name == 'recipients' or request.resolver_match.url_name == 'recipient_profile' %}active{% endif %}">
                 <i class="bi bi-people"></i>
                 <span>Recipients</span>
+            </a>
+            <a href="{% url 'purchases' %}" class="sidebar-link {% if request.resolver_match.url_name == 'purchases' or request.resolver_match.url_name == 'record_purchase' or request.resolver_match.url_name == 'update_purchase_feedback' %}active{% endif %}">
+                <i class="bi bi-bag-check"></i>
+                <span>Purchases</span>
             </a>
         </div>
         <div>
             <h5 class="text-muted mb-3">Settings</h5>
-            <a href="{% url 'preferences' %}" class="sidebar-link">
+            <a href="{% url 'preferences' %}" class="sidebar-link {% if request.resolver_match.url_name == 'preferences' %}active{% endif %}">
                 <i class="bi bi-gear"></i>
                 <span>Preferences</span>
             </a>

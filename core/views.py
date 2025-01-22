@@ -1,7 +1,7 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.views.generic import TemplateView
 from django.contrib.auth.mixins import LoginRequiredMixin
-from .models import GiftIdea, Tag, Recipient, UserPreferences
+from .models import GiftIdea, Tag, Recipient, UserPreferences, PurchaseRecord
 from django.db.models import Min, Max
 from django.contrib.auth import get_user_model
 from django.http import JsonResponse
@@ -13,6 +13,7 @@ from django.db.models import Q
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from .services.ai_processor import AIProcessor
+from django.utils import timezone
 
 User = get_user_model()
 
@@ -352,22 +353,24 @@ def add_gift_to_recipient(request, recipient_id):
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=400)
 
+@login_required
 def gift_detail(request, gift_id):
-    gift = get_object_or_404(GiftIdea, id=gift_id)
+    """View for displaying gift details."""
+    gift = get_object_or_404(GiftIdea, id=gift_id, user=request.user)
     
-    # Get similar gifts based on shared tags
+    # Get similar gifts based on tags
     similar_gifts = GiftIdea.objects.filter(
+        user=request.user,
         tags__in=gift.tags.all()
-    ).exclude(
-        id=gift.id
-    ).distinct()[:6]  # Limit to 6 similar gifts
+    ).exclude(id=gift.id).distinct()[:4]
     
     context = {
         'gift': gift,
         'similar_gifts': similar_gifts,
-        'status_choices': GiftIdea.STATUS_CHOICES,
+        'today': timezone.now().date(),
+        'all_recipients': Recipient.objects.filter(user=request.user),
         'all_tags': Tag.objects.all(),
-        'all_recipients': Recipient.objects.all(),
+        'status_choices': GiftIdea.STATUS_CHOICES,
     }
     
     return render(request, 'gift_detail.html', context)
@@ -692,3 +695,55 @@ def fetch_deepseek_models(request):
         return JsonResponse({'error': 'User preferences not found'}, status=404)
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=500)
+
+@login_required
+def purchases(request):
+    """View for listing all purchase records"""
+    purchases = PurchaseRecord.objects.filter(user=request.user)
+    return render(request, 'purchases.html', {
+        'purchases': purchases
+    })
+
+@login_required
+def record_purchase(request, gift_id):
+    """View for recording a new purchase"""
+    gift = get_object_or_404(GiftIdea, id=gift_id, user=request.user)
+    
+    if request.method == 'POST':
+        recipient_id = request.POST.get('recipient')
+        purchase_date = request.POST.get('purchase_date')
+        feedback = request.POST.get('feedback')
+        
+        try:
+            recipient = Recipient.objects.get(id=recipient_id, user=request.user)
+            
+            # Create purchase record
+            PurchaseRecord.objects.create(
+                gift=gift,
+                recipient=recipient,
+                user=request.user,
+                purchase_date=purchase_date or timezone.now().date(),
+                feedback=feedback
+            )
+            
+            messages.success(request, 'Purchase recorded successfully!')
+            return redirect('gift_detail', gift_id=gift_id)
+            
+        except Recipient.DoesNotExist:
+            messages.error(request, 'Invalid recipient selected.')
+            return redirect('gift_detail', gift_id=gift_id)
+    
+    return redirect('gift_detail', gift_id=gift_id)
+
+@login_required
+def update_purchase_feedback(request, purchase_id):
+    """View for updating purchase feedback"""
+    purchase = get_object_or_404(PurchaseRecord, id=purchase_id, user=request.user)
+    
+    if request.method == 'POST':
+        feedback = request.POST.get('feedback')
+        purchase.feedback = feedback
+        purchase.save()
+        messages.success(request, 'Feedback updated successfully!')
+    
+    return redirect('purchases')
