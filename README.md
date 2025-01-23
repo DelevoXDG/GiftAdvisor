@@ -11,6 +11,11 @@ A smart gift recommendation system that helps you manage and track gift ideas fo
 - Social login with Google
 - AI-powered gift suggestions
 
+## Documentation 📚
+
+- [Design Patterns](docs/design_patterns.md)
+- [Class Diagram](docs/class_diagram.png)
+
 ## Prerequisites 📋
 
 - Python 3.12+
