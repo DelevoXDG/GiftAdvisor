@@ -15,7 +15,7 @@ A smart gift recommendation system that helps you manage and track gift ideas fo
 
 - Python 3.12+
 - Poetry for dependency management
-- A Google Cloud Platform account for OAuth
+- Google Cloud Platform
 
 ## Setup 🚀
 
