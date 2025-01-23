@@ -3,31 +3,7 @@
 
 {% block content %}
 <div class="d-flex">
-    <!-- Left Sidebar -->
-    <div class="sidebar mt-4">
-        <div class="mb-5">
-            <h5 class="text-muted mb-3">Sections</h5>
-            <a href="{% url 'index' %}" class="sidebar-link {% if request.resolver_match.url_name == 'index' %}active{% endif %}">
-                <i class="bi bi-gift"></i>
-                <span>Gift Ideas</span>
-            </a>
-            <a href="{% url 'recipients' %}" class="sidebar-link {% if request.resolver_match.url_name == 'recipients' or request.resolver_match.url_name == 'recipient_profile' %}active{% endif %}">
-                <i class="bi bi-people"></i>
-                <span>Recipients</span>
-            </a>
-            <a href="{% url 'purchases' %}" class="sidebar-link {% if request.resolver_match.url_name == 'purchases' or request.resolver_match.url_name == 'record_purchase' or request.resolver_match.url_name == 'update_purchase_feedback' %}active{% endif %}">
-                <i class="bi bi-bag-check"></i>
-                <span>Purchases</span>
-            </a>
-        </div>
-        <div>
-            <h5 class="text-muted mb-3">Settings</h5>
-            <a href="{% url 'preferences' %}" class="sidebar-link {% if request.resolver_match.url_name == 'preferences' %}active{% endif %}">
-                <i class="bi bi-gear"></i>
-                <span>Preferences</span>
-            </a>
-        </div>
-    </div>
+    {% include 'includes/sidebar.html' %}
 
     <!-- Main Content -->
     <div class="main-content">
@@ -59,14 +35,7 @@
                 <div class="d-flex justify-content-between align-items-center mb-4">
                     <h2 class="fw-bold mb-3" style="font-size: 1.75rem;">Gift Ideas</h2>
                     <div class="d-flex gap-3">
-                        <div class="btn-group" role="group">
-                            <button type="button" class="btn btn-outline-primary rounded-start-pill px-3" id="gridViewBtn">
-                                <i class="bi bi-grid"></i>
-                            </button>
-                            <button type="button" class="btn btn-outline-primary rounded-end-pill px-3" id="listViewBtn">
-                                <i class="bi bi-list-ul"></i>
-                            </button>
-                        </div>
+                        {% include 'includes/view_toggle.html' with grid_view_id="giftGrid" list_view_id="giftList" view_storage_key="giftViewMode" %}
                         <button class="btn btn-primary d-flex align-items-center gap-2 rounded-pill shadow-sm hover-shadow-md" data-bs-toggle="modal" data-bs-target="#addGiftModal">
                             <i class="bi bi-plus-lg"></i>
                             <span>Add Gift Idea</span>
@@ -75,31 +44,9 @@
                 </div>
 
                 <!-- Search Form -->
-                <form class="mb-4" method="GET">
-                    <div class="input-group">
-                        <input type="text" 
-                               name="search" 
-                               class="form-control rounded-start-pill" 
-                               placeholder="Search gift ideas..."
-                               value="{{ request.GET.search }}">
-                        <!-- Preserve filter parameters -->
-                        {% if request.GET.price_range %}
-                            <input type="hidden" name="price_range" value="{{ request.GET.price_range }}">
-                        {% endif %}
-                        {% if request.GET.recipient %}
-                            <input type="hidden" name="recipient" value="{{ request.GET.recipient }}">
-                        {% endif %}
-                        {% if request.GET.status %}
-                            <input type="hidden" name="status" value="{{ request.GET.status }}">
-                        {% endif %}
-                        {% if request.GET.sort %}
-                            <input type="hidden" name="sort" value="{{ request.GET.sort }}">
-                        {% endif %}
-                        <button class="btn btn-primary rounded-end-pill" type="submit">
-                            <i class="bi bi-search"></i>
-                        </button>
-                    </div>
-                </form>
+                {% with preserved_params=current_filters placeholder="Search gift ideas..." %}
+                    {% include 'includes/search_bar.html' %}
+                {% endwith %}
 
                 <form id="filterForm" class="mb-4" method="GET">
                     <!-- Preserve search query -->
@@ -307,51 +254,7 @@
     </div>
 </div>
 
-<!-- Django Messages -->
-{% if messages %}
-<div class="position-fixed top-0 end-0 p-3" style="z-index: 1100">
-    {% for message in messages %}
-    <div class="toast show" role="alert" aria-live="assertive" aria-atomic="true">
-        <div class="toast-header {% if message.tags %}bg-{{ message.tags }}{% endif %} text-white">
-            <i class="bi {% if message.tags == 'success' %}bi-check-circle{% elif message.tags == 'error' %}bi-exclamation-circle{% else %}bi-info-circle{% endif %} me-2"></i>
-            <strong class="me-auto">{{ message.tags|title }}</strong>
-            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast"></button>
-        </div>
-        <div class="toast-body">
-            {{ message }}
-        </div>
-    </div>
-    {% endfor %}
-</div>
-{% endif %}
-
-<!-- Processing Toast -->
-<div class="toast-container position-fixed bottom-0 end-0 p-3">
-    <div id="processingToast" class="toast" role="alert" aria-live="assertive" aria-atomic="true" data-bs-autohide="false">
-        <div class="toast-header bg-primary text-white">
-            <i class="bi bi-gear-fill me-2"></i>
-            <strong class="me-auto">Processing</strong>
-        </div>
-        <div class="toast-body">
-            <div class="d-flex align-items-center">
-                <div class="spinner-border spinner-border-sm me-2" role="status">
-                    <span class="visually-hidden">Processing...</span>
-                </div>
-                <span>Processing gift idea with AI...</span>
-            </div>
-        </div>
-    </div>
-    
-    <div id="errorToast" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
-        <div class="toast-header bg-danger text-white">
-            <i class="bi bi-exclamation-circle me-2"></i>
-            <strong class="me-auto">Error</strong>
-            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast"></button>
-        </div>
-        <div class="toast-body" id="errorToastMessage">
-        </div>
-    </div>
-</div>
+{% include 'includes/toast_notifications.html' with processing_message="Processing gift idea with AI..." %}
 
 {% block extra_js %}
 <script src="{% static 'js/dashboard.js' %}"></script>
@@ -360,130 +263,28 @@
 
 {% block extra_css %}
 <style>
-    /* Layout buttons */
-    .btn-layout {
-        border: none;
-        padding: 0.5rem 1rem;
-        background: none;
-        color: var(--bs-secondary);
-        border-radius: 50rem;
-        transition: all 0.2s ease-in-out;
-    }
-
-    .btn-layout:hover {
-        background-color: var(--bs-primary-bg-subtle);
-        transform: translateY(-1px);
-    }
-
-    .btn-layout.active {
-        color: var(--bs-primary);
-        background-color: var(--bs-primary-bg-subtle);
-        box-shadow: 0 .2rem .3rem rgba(0,0,0,.1);
-    }
-
-    /* Gift cards */
-    .gift-card {
-        border-radius: 1rem;
-        border: none;
-        box-shadow: 0 .2rem .3rem rgba(0,0,0,.1);
-        transition: all 0.2s ease-in-out;
-        overflow: hidden;
-    }
-
-    .gift-card:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 .3rem .5rem rgba(0,0,0,.15);
-    }
-
     /* Quick add button */
     #quickAddBtn {
         border-radius: 50rem;
-        box-shadow: 0 .2rem .3rem rgba(0,0,0,.1);
-        transition: all 0.2s ease-in-out;
     }
 
-    #quickAddBtn:hover {
-        box-shadow: 0 .3rem .5rem rgba(0,0,0,.15);
-        transform: translateY(-1px);
+    /* Form elements - specific to dashboard */
+    .form-control.search-input {
+        padding-left: 2.5rem;
     }
 
-    /* Form elements */
-    .form-control, .form-select {
-        border-radius: 0.75rem;
+    .search-icon {
+        position: absolute;
+        left: 1rem;
+        top: 50%;
+        transform: translateY(-50%);
     }
 
-    /* Badges and tags */
-    .badge {
-        border-radius: 50rem;
-        font-weight: 500;
-    }
-
-    /* Modal buttons */
-    .modal .btn {
-        border-radius: 50rem;
-        transition: all 0.2s ease-in-out;
-    }
-
-    .modal .btn:hover {
-        transform: translateY(-1px);
-    }
-
-    /* Toast styling */
-    .toast {
-        border-radius: 1rem;
-        border: none;
-        box-shadow: 0 .2rem .5rem rgba(0,0,0,.15);
-    }
-
-    .toast .toast-header {
-        border-top-left-radius: 1rem;
-        border-top-right-radius: 1rem;
-    }
-
-    /* Font sizes */
-    .gift-title {
-        font-size: 1.25rem;
-        font-weight: 600;
-    }
-
-    .gift-price {
-        font-size: 1.1rem;
-        font-weight: 600;
-    }
-
-    /* Update existing styles */
-    .btn-group .btn:first-child {
-        border-top-left-radius: 50rem !important;
-        border-bottom-left-radius: 50rem !important;
-    }
-
-    .btn-group .btn:last-child {
-        border-top-right-radius: 50rem !important;
-        border-bottom-right-radius: 50rem !important;
-    }
-
-    .btn-group .btn.active {
-        background-color: var(--bs-primary);
-        color: white;
-        border-color: var(--bs-primary);
-    }
-
-    /* Quick add button */
-    .circular-button {
-        border-radius: 50rem;
-        width: 40px;
-        height: 40px;
-        padding: 0;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        box-shadow: 0 .2rem .3rem rgba(0,0,0,.1);
-        transition: all 0.2s ease-in-out;
-    }
-
-    .circular-button:hover {
-        box-shadow: 0 .3rem .5rem rgba(0,0,0,.15);
-        transform: translateY(-1px);
+    /* Gift grid specific styles */
+    .gift-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+        gap: 1.5rem;
     }
 </style>
 {% endblock %}

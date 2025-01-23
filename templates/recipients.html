@@ -3,31 +3,7 @@
 
 {% block content %}
 <div class="d-flex">
-    <!-- Left Sidebar -->
-    <div class="sidebar mt-4">
-        <div class="mb-5">
-            <h5 class="text-muted mb-3">Sections</h5>
-            <a href="{% url 'index' %}" class="sidebar-link {% if request.resolver_match.url_name == 'index' %}active{% endif %}">
-                <i class="bi bi-gift"></i>
-                <span>Gift Ideas</span>
-            </a>
-            <a href="{% url 'recipients' %}" class="sidebar-link {% if request.resolver_match.url_name == 'recipients' or request.resolver_match.url_name == 'recipient_profile' %}active{% endif %}">
-                <i class="bi bi-people"></i>
-                <span>Recipients</span>
-            </a>
-            <a href="{% url 'purchases' %}" class="sidebar-link {% if request.resolver_match.url_name == 'purchases' or request.resolver_match.url_name == 'record_purchase' or request.resolver_match.url_name == 'update_purchase_feedback' %}active{% endif %}">
-                <i class="bi bi-bag-check"></i>
-                <span>Purchases</span>
-            </a>
-        </div>
-        <div>
-            <h5 class="text-muted mb-3">Settings</h5>
-            <a href="{% url 'preferences' %}" class="sidebar-link {% if request.resolver_match.url_name == 'preferences' %}active{% endif %}">
-                <i class="bi bi-gear"></i>
-                <span>Preferences</span>
-            </a>
-        </div>
-    </div>
+    {% include 'includes/sidebar.html' %}
 
     <!-- Main Content -->
     <div class="main-content">
@@ -37,14 +13,7 @@
                     <div class="d-flex justify-content-between align-items-center mb-4">
                         <h2 class="fw-bold" style="font-size: 1.75rem;">Recipients</h2>
                         <div class="d-flex gap-3">
-                            <div class="btn-group" role="group">
-                                <button type="button" class="btn btn-outline-primary active px-3" id="gridViewBtn">
-                                    <i class="bi bi-grid"></i>
-                                </button>
-                                <button type="button" class="btn btn-outline-primary px-3" id="listViewBtn">
-                                    <i class="bi bi-list-ul"></i>
-                                </button>
-                            </div>
+                            {% include 'includes/view_toggle.html' with grid_view_id="recipientGrid" list_view_id="recipientList" view_storage_key="recipientViewMode" %}
                             <button class="btn btn-primary d-flex align-items-center gap-2" data-bs-toggle="modal" data-bs-target="#addRecipientModal">
                                 <i class="bi bi-plus-lg"></i>
                                 <span>Add Recipient</span>
@@ -53,21 +22,13 @@
                     </div>
 
                     <!-- Search Bar -->
-                    <div class="mb-4">
-                        <div class="modern-input-wrapper">
-                            <i class="bi bi-search input-icon"></i>
-                            <input type="text" 
-                                   class="modern-input" 
-                                   id="recipientSearch"
-                                   placeholder="Search recipients..."
-                                   autocomplete="off"
-                                   spellcheck="false">
-                        </div>
-                    </div>
+                    {% with placeholder="Search recipients..." input_id="recipientSearch" %}
+                        {% include 'includes/search_bar.html' %}
+                    {% endwith %}
 
                     {% if recipients %}
                         <!-- Grid View -->
-                        <div class="gift-grid">
+                        <div id="recipientGrid" class="gift-grid">
                             {% for recipient in recipients %}
                                 <a href="{% url 'recipient_profile' recipient.id %}" class="text-decoration-none">
                                     <div class="card h-100 recipient-card rounded-4 border-0 shadow" style="transition: transform 0.15s ease-in-out, box-shadow 0.15s ease-in-out;">
@@ -115,7 +76,7 @@
                         </div>
 
                         <!-- List View -->
-                        <div class="gift-list d-none">
+                        <div id="recipientList" class="gift-list d-none">
                             {% for recipient in recipients %}
                                 <a href="{% url 'recipient_profile' recipient.id %}" class="text-decoration-none">
                                     <div class="gift-item rounded-4 shadow clickable" style="transition: transform 0.15s ease-in-out, box-shadow 0.15s ease-in-out;">
@@ -269,42 +230,21 @@
 
 {% block extra_css %}
 <style>
-    .recipient-card {
-        transition: all 0.2s ease-in-out;
-    }
-    
-    .recipient-card:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 .3rem .5rem rgba(0,0,0,.15)!important;
+    /* Recipient specific styles */
+    .recipient-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+        gap: 1.5rem;
     }
 
-    /* Consistent button and input styling */
-    .btn {
-        border-radius: 50rem;
-    }
-
-    .form-control, .form-select {
-        border-radius: 0.75rem;
-    }
-
-    .badge {
-        border-radius: 50rem;
-    }
-
-    /* Add recipient button styling */
-    #addRecipientBtn {
-        box-shadow: 0 .2rem .3rem rgba(0,0,0,.1);
-        transition: all 0.2s ease-in-out;
-    }
-
-    #addRecipientBtn:hover {
-        box-shadow: 0 .3rem .5rem rgba(0,0,0,.15);
-        transform: translateY(-1px);
-    }
-
-    /* Font consistency */
     .recipient-name {
-        font-size: 1.5rem;
+        font-size: 1.1rem;
+        font-weight: 600;
+    }
+
+    .recipient-info {
+        font-size: 0.9rem;
+        color: var(--bs-gray-600);
     }
 </style>
 {% endblock %}

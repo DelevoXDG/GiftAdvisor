@@ -221,6 +221,7 @@
             margin-left: calc(280px + ((100% - 1320px) / 2));
             padding: 1rem;
             width: calc(1320px - 280px);
+            min-height: calc(100vh - 56px - 2rem);
         }
 
         @media (max-width: 1400px) {
@@ -538,6 +539,153 @@
 
         .recipient-card:hover .btn-outline-primary {
             opacity: 0.9;
+        }
+
+        /* Global button styles */
+        .btn {
+            border-radius: 50rem !important;  /* Make ALL buttons rounded */
+            transition: all 0.2s ease-in-out;
+            padding: 0.5rem 1rem;
+        }
+
+        .btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 .3rem .5rem rgba(0,0,0,.15);
+        }
+
+        /* Consistent shadow styles */
+        .shadow-sm {
+            box-shadow: 0 .2rem .3rem rgba(0,0,0,.08) !important;
+        }
+
+        .shadow {
+            box-shadow: 0 .3rem .5rem rgba(0,0,0,.1) !important;
+        }
+
+        .shadow-lg {
+            box-shadow: 0 .5rem 1rem rgba(0,0,0,.15) !important;
+        }
+
+        /* Hover shadow utilities */
+        .hover-shadow-sm {
+            transition: all 0.2s ease-in-out;
+        }
+
+        .hover-shadow-sm:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 .2rem .3rem rgba(0,0,0,.08) !important;
+        }
+
+        .hover-shadow {
+            transition: all 0.2s ease-in-out;
+        }
+
+        .hover-shadow:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 .3rem .5rem rgba(0,0,0,.1) !important;
+        }
+
+        .hover-shadow-lg {
+            transition: all 0.2s ease-in-out;
+        }
+
+        .hover-shadow-lg:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 .5rem 1rem rgba(0,0,0,.15) !important;
+        }
+
+        /* Main content alignment */
+        .main-content {
+            margin-left: calc(280px + ((100% - 1320px) / 2));
+            padding: 1rem;
+            width: calc(1320px - 280px);
+            min-height: calc(100vh - 56px - 2rem);
+        }
+
+        /* Card styles */
+        .card {
+            border: none;
+            border-radius: 1rem;
+            background: var(--card-background);
+        }
+
+        /* Container styles */
+        .container, .container-fluid {
+            padding-left: 1.5rem;
+            padding-right: 1.5rem;
+        }
+
+        /* Consistent spacing */
+        .section-spacing {
+            margin-bottom: 1.5rem;
+        }
+
+        .content-spacing {
+            padding: 1.5rem;
+        }
+
+        /* Search input group */
+        .search-group {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 0.75rem 1rem 0.75rem 3rem;
+            font-size: 1rem;
+            line-height: 1.5;
+            color: var(--text-color);
+            background-color: var(--card-background);
+            border: 2px solid var(--border-color);
+            border-radius: 50rem;
+            transition: all 0.2s ease-in-out;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 4px rgba(255, 71, 87, 0.1);
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 1.25rem;
+            color: var(--primary-color);
+            opacity: 0.8;
+            pointer-events: none;
+        }
+
+        .search-button {
+            position: absolute;
+            right: 0.25rem;
+            top: 50%;
+            transform: translateY(-50%);
+            padding: 0.5rem;
+            border-radius: 50%;
+            width: 38px;
+            height: 38px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: var(--primary-color);
+            border: none;
+            color: white;
+            transition: all 0.2s ease-in-out;
+        }
+
+        .search-button:hover {
+            transform: translateY(-50%) scale(1.05);
+            box-shadow: 0 4px 12px rgba(255, 71, 87, 0.25);
+        }
+
+        .search-input-wrapper {
+            position: relative;
+            width: 100%;
         }
     </style>
     {% block extra_css %}{% endblock %}

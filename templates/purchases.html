@@ -39,18 +39,9 @@
                     </div>
 
                     <!-- Search Form -->
-                    <form class="mb-4" method="GET">
-                        <div class="input-group">
-                            <input type="text" 
-                                   name="search" 
-                                   class="form-control rounded-start-pill" 
-                                   placeholder="Search by gift title, recipient name, or feedback..."
-                                   value="{{ request.GET.search }}">
-                            <button class="btn btn-primary rounded-end-pill" type="submit">
-                                <i class="bi bi-search"></i>
-                            </button>
-                        </div>
-                    </form>
+                    {% with placeholder="Search by gift title, recipient name, or feedback..." %}
+                        {% include 'includes/search_bar.html' %}
+                    {% endwith %}
 
                     <!-- Purchases List -->
                     {% if purchases %}

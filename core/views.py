@@ -121,10 +121,26 @@ class RecipientsView(LoginRequiredMixin, TemplateView):
         context = super().get_context_data(**kwargs)
         user = self.request.user
         
+        # Get base queryset
+        recipients = Recipient.objects.filter(user=user)
+        
+        # Apply search if provided
+        search_query = self.request.GET.get('search')
+        if search_query:
+            recipients = recipients.filter(
+                Q(name__icontains=search_query) |
+                Q(notes__icontains=search_query) |
+                Q(interests__name__icontains=search_query)
+            ).distinct()
+        
+        # Order by name
+        recipients = recipients.order_by('name')
+        
         context.update({
-            'recipients': Recipient.objects.filter(user=user).order_by('name'),
+            'recipients': recipients,
             'tags': Tag.objects.all().order_by('name'),
             'relationship_choices': Recipient.RELATIONSHIP_CHOICES,
+            'search_query': search_query,
         })
         
         return context
