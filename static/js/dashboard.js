@@ -6,7 +6,7 @@ class Dashboard {
         this.bsModal = new bootstrap.Modal(this.addGiftModal);
         this.quickAddForm = document.getElementById('quickAddForm');
         this.quickAddInput = this.quickAddForm.querySelector('input[name="url"]');
-        this.quickAddButton = this.quickAddForm.querySelector('button[type="submit"]');
+        this.quickAddButton = this.quickAddForm.querySelector('.search-button');
         
         // View toggle elements
         this.gridViewBtn = document.getElementById('gridViewBtn');
@@ -19,12 +19,11 @@ class Dashboard {
         
         // State
         this.isSubmitting = false;
-		this.isExtracting = false;
-		        this.currentExtraction = null;
-
+        this.isExtracting = false;
+        this.currentExtraction = null;
         
-		this.initializeEventListeners();
-		this.restoreLayoutPreference();
+        this.initializeEventListeners();
+        this.restoreLayoutPreference();
         
         // Initial button state
         this.updateQuickAddButtonState();
@@ -36,8 +35,8 @@ class Dashboard {
         document.getElementById('submitGiftBtn').addEventListener('click', (e) => this.handleGiftSubmit(e));
         
         // Quick add form
-		this.quickAddForm.addEventListener('submit', (e) => this.handleQuickAdd(e));
-		this.quickAddInput.addEventListener('input', () => this.updateQuickAddButtonState());
+        this.quickAddForm.addEventListener('submit', (e) => this.handleQuickAdd(e));
+        this.quickAddInput.addEventListener('input', () => this.updateQuickAddButtonState());
         
         // View toggling
         this.gridViewBtn.addEventListener('click', () => this.toggleView('grid'));
@@ -47,11 +46,13 @@ class Dashboard {
         this.filterForm.querySelectorAll('select').forEach(select => {
             select.addEventListener('change', () => this.filterForm.submit());
         });
-	}
-	
+    }
+
     updateQuickAddButtonState() {
         const hasValue = this.quickAddInput.value.trim() !== '';
         this.quickAddButton.disabled = !hasValue;
+        this.quickAddButton.style.opacity = hasValue ? '1' : '0.5';
+        this.quickAddButton.style.cursor = hasValue ? 'pointer' : 'not-allowed';
     }
 
     restoreLayoutPreference() {
@@ -218,8 +219,8 @@ class Dashboard {
             this.gridViewBtn.classList.remove('active');
             this.giftList.classList.remove('d-none');
             this.giftGrid.classList.add('d-none');
-		}
-		
+        }
+        
         if (savePreference) {
             localStorage.setItem('giftLayoutPreference', type);
         }

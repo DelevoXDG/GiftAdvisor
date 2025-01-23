@@ -11,23 +11,22 @@
             <!-- Quick Add Container -->
             <div class="quick-add-section mb-4">
                 <h2 class="fw-bold mb-3" style="font-size: 1.75rem;">Quick Add</h2>
-                <form class="d-flex gap-3" id="quickAddForm">
+                <form id="quickAddForm">
                     {% csrf_token %}
-                    <div class="flex-grow-1 position-relative">
-                        <div class="modern-input-wrapper">
-                            <i class="bi bi-link-45deg input-icon" style="font-size: 1.5rem;"></i>
+                    <div class="search-group">
+                        <div class="search-input-wrapper">
+                            <i class="bi bi-link-45deg search-icon" style="font-size: 1.5rem;"></i>
                             <input type="url" 
-                                   class="modern-input" 
                                    name="url"
+                                   class="search-input" 
                                    placeholder="Paste a link to instantly add a gift idea..."
                                    autocomplete="off"
-                                   spellcheck="false"
-                                   style="font-size: 0.95rem;">
+                                   spellcheck="false">
+                            <button type="submit" class="search-button" disabled>
+                                <i class="bi bi-plus-lg"></i>
+                            </button>
                         </div>
                     </div>
-                    <button type="submit" class="btn btn-primary circular-button">
-                        <i class="bi bi-plus-lg"></i>
-                    </button>
                 </form>
             </div>
 
