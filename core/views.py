@@ -539,13 +539,14 @@ def gift_detail_api(request, gift_id):
             gift.image_url = data.get('image_url', '')
             gift.description = data.get('description', '')
             gift.notes = data.get('notes', '')
-            gift.save()
             
             if 'tags' in data:
                 gift.tags.set(data['tags'])
             
             if 'recipients' in data:
                 gift.recipients.set(data['recipients'])
+            
+            gift.save()
             
             return JsonResponse({'message': 'Gift updated successfully'})
             
