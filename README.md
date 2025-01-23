@@ -63,3 +63,26 @@ poetry run ./manage.py createsuperuser
 ```bash
 poetry run ./manage.py runserver
 ```
+
+
+## Usage Guide 🌟
+
+### Managing Recipients 👥
+1. Go to [Recipients](http://127.0.0.1:8000/recipients/) and add your loved ones to recipients list
+2. Tag their interests (e.g., "TV", "Fishing", "Books")
+3. Add personal notes to remember their preferences
+
+### Set up AI Processing 🤖
+1. Go to [Preferences](http://127.0.0.1:8000/preferences/) and set up your AI processing preferences
+2. Choose your preferred AI provider and model
+3. Set up API keys for your AI provider of choice
+
+### Add gift ideas from your favorite stores 🛒
+1. Go to [Gift Ideas](http://127.0.0.1:8000/) and add gift ideas from your favorite stores via "Quick Add" feature, by pasting product URL
+2. All the info like title, description, price, images will be automatically extracted from the product page
+3. Then, your gift ideas will be automatically processed by AI and added to your dashboard! The AI will determine tags and great potential recipients for each gift idea!
+
+### Finding the Perfect Gift 🎯
+1. Browse [Recipients](http://127.0.0.1:8000/recipients/) that will already have a list of gift ideas personalized for them!
+2. You can also find the perfect gift for your recipient by browsing [Gift Ideas](http://127.0.0.1:8000/), based on price, relationsip
+3. When you found a gift idea, you can mark it as "Gifted", and keep track of feedback for every gift you make!
