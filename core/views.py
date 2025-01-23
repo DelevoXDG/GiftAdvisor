@@ -96,6 +96,19 @@ class IndexView(TemplateView):
             except EmptyPage:
                 gifts = paginator.page(paginator.num_pages)
             
+            # Build current filters dict only including non-None values
+            current_filters = {}
+            if price_range:
+                current_filters['price_range'] = price_range
+            if recipient_filter:
+                current_filters['recipient'] = recipient_filter
+            if status_filter:
+                current_filters['status'] = status_filter
+            if sort_by != 'recent':
+                current_filters['sort'] = sort_by
+            if search_query:
+                current_filters['search'] = search_query
+            
             context.update({
                 'gifts': gifts,
                 'tags': Tag.objects.filter(gift_ideas__user=user).distinct(),
@@ -103,13 +116,7 @@ class IndexView(TemplateView):
                 'price_stats': price_stats,
                 'relationship_choices': Recipient.RELATIONSHIP_CHOICES,
                 'status_choices': GiftIdea.STATUS_CHOICES,
-                'current_filters': {
-                    'price_range': price_range,
-                    'recipient': recipient_filter,
-                    'status': status_filter,
-                    'sort': sort_by,
-                    'search': search_query
-                }
+                'current_filters': current_filters
             })
             
         return context
@@ -339,11 +346,69 @@ class RecipientProfileView(LoginRequiredMixin, TemplateView):
         recipient_id = kwargs.get('recipient_id')
         recipient = get_object_or_404(Recipient, id=recipient_id, user=self.request.user)
         
+        # Get all gifts for this recipient
+        gifts = recipient.gift_ideas.all()
+        
+        # Apply search filter
+        search_query = self.request.GET.get('search')
+        if search_query:
+            gifts = gifts.filter(
+                Q(title__icontains=search_query) |
+                Q(description__icontains=search_query) |
+                Q(tags__name__icontains=search_query)
+            ).distinct()
+        
+        # Apply price range filter
+        price_range = self.request.GET.get('price_range')
+        if price_range:
+            if price_range == 'under_25':
+                gifts = gifts.filter(price__lt=25)
+            elif price_range == '25_50':
+                gifts = gifts.filter(price__gte=25, price__lt=50)
+            elif price_range == '50_100':
+                gifts = gifts.filter(price__gte=50, price__lt=100)
+            elif price_range == 'over_100':
+                gifts = gifts.filter(price__gte=100)
+        
+        # Apply status filter
+        status = self.request.GET.get('status')
+        if status:
+            gifts = gifts.filter(status=status)
+        
+        # Apply sorting
+        sort = self.request.GET.get('sort', 'recent')
+        if sort == 'recent':
+            gifts = gifts.order_by('-created_at')
+        elif sort == 'price_low':
+            gifts = gifts.order_by('price')
+        elif sort == 'price_high':
+            gifts = gifts.order_by('-price')
+        
+        # Pagination
+        paginator = Paginator(gifts, 12)  # Show 12 gifts per page
+        page = self.request.GET.get('page')
+        try:
+            gifts = paginator.page(page)
+        except PageNotAnInteger:
+            gifts = paginator.page(1)
+        except EmptyPage:
+            gifts = paginator.page(paginator.num_pages)
+        
+        # Current filters for form
+        current_filters = {
+            'search': search_query,
+            'price_range': price_range,
+            'status': status,
+            'sort': sort
+        }
+        
         context.update({
             'recipient': recipient,
-            'gifts': recipient.gift_ideas.all().order_by('-created_at'),
-            'tags': [{'id': tag.id, 'name': tag.name} for tag in Tag.objects.all().order_by('name')],
+            'gifts': gifts,
+            'tags': Tag.objects.all().order_by('name'),
             'relationship_choices': Recipient.RELATIONSHIP_CHOICES,
+            'status_choices': GiftIdea.STATUS_CHOICES,
+            'current_filters': current_filters,
         })
         
         return context

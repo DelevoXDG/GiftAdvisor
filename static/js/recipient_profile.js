@@ -1,26 +1,23 @@
 class RecipientProfile {
     constructor() {
-        // Elements
+        // Form elements
         this.editForm = document.getElementById('editRecipientForm');
-        this.saveButton = document.getElementById('saveRecipientBtn');
         this.editModal = document.getElementById('editRecipientModal');
-        this.bsEditModal = new bootstrap.Modal(this.editModal);
-        
-        this.addGiftModal = document.getElementById('addGiftModal');
-        this.bsAddGiftModal = new bootstrap.Modal(this.addGiftModal);
+        this.bsModal = new bootstrap.Modal(this.editModal);
         this.searchInput = document.getElementById('giftSearch');
         this.searchResults = document.getElementById('searchResults');
+        this.filterForm = document.getElementById('filterForm');
         
         // View toggle elements
         this.gridViewBtn = document.getElementById('gridViewBtn');
         this.listViewBtn = document.getElementById('listViewBtn');
-        this.giftGrid = document.querySelector('.gift-grid');
-        this.giftList = document.querySelector('.gift-list');
+        this.giftGrid = document.getElementById('giftGrid');
+        this.giftList = document.getElementById('giftList');
         
         // State
+        this.recipientId = window.location.pathname.split('/').filter(Boolean).pop();
         this.isSubmitting = false;
         this.searchTimeout = null;
-        this.recipientId = window.location.pathname.split('/').filter(Boolean).pop();
         
         // Interests elements
         this.interestInput = document.getElementById('interestInput');
@@ -39,18 +36,16 @@ class RecipientProfile {
     }
 
     initializeEventListeners() {
-        // Edit form events
-        this.saveButton.addEventListener('click', () => this.handleSave());
+        // Modal events
         this.editModal.addEventListener('hidden.bs.modal', () => this.handleModalHidden());
         
         // Search events
-        this.searchInput.addEventListener('input', () => this.handleSearch());
-        this.addGiftModal.addEventListener('hidden.bs.modal', () => this.handleSearchModalHidden());
-        this.addGiftModal.addEventListener('shown.bs.modal', () => this.loadRecentGifts());
+        this.searchInput.addEventListener('input', (e) => this.handleSearch(e));
         
-        // View toggling
-        this.gridViewBtn.addEventListener('click', () => this.toggleView('grid'));
-        this.listViewBtn.addEventListener('click', () => this.toggleView('list'));
+        // Filter form
+        this.filterForm.querySelectorAll('select').forEach(select => {
+            select.addEventListener('change', () => this.filterForm.submit());
+        });
         
         // Add event listeners for interests
         if (this.interestInput) {
@@ -75,6 +70,55 @@ class RecipientProfile {
         if (savedLayout) {
             this.toggleView(savedLayout, false);
         }
+    }
+
+    handleSearch(e) {
+        clearTimeout(this.searchTimeout);
+        const query = e.target.value.trim();
+        
+        this.searchTimeout = setTimeout(async () => {
+            if (query.length < 2) {
+                this.searchResults.innerHTML = '';
+                return;
+            }
+            
+            try {
+                const response = await fetch(`/api/gifts/search/?q=${encodeURIComponent(query)}`);
+                const gifts = await response.json();
+                
+                this.renderSearchResults(gifts);
+            } catch (error) {
+                console.error('Error searching gifts:', error);
+            }
+        }, 300);
+    }
+
+    renderSearchResults(gifts) {
+        if (!gifts.length) {
+            this.searchResults.innerHTML = `
+                <div class="text-center py-5">
+                    <i class="bi bi-search mb-4" style="font-size: 3rem; opacity: 0.5;"></i>
+                    <h4 class="fw-bold" style="font-size: 1.25rem;">No gifts found</h4>
+                    <p class="text-muted" style="font-size: 0.95rem;">Try a different search term.</p>
+                </div>
+            `;
+            return;
+        }
+        
+        this.searchResults.innerHTML = gifts.map(gift => `
+            <div class="gift-card clickable" onclick="recipientProfile.addGiftToRecipient(${gift.id})">
+                <div class="empty-img">
+                    ${gift.image_url ? `<img src="${gift.image_url}" alt="${gift.title}" class="gift-image">` : '<i class="bi bi-image-fill" style="font-size: 2rem; opacity: 0.5;"></i>'}
+                </div>
+                <div class="p-4">
+                    <h5 class="fw-bold mb-2" style="font-size: 1.1rem;">${gift.title}</h5>
+                    ${gift.price ? `<p class="text-primary fw-bold mb-3" style="font-size: 0.95rem;">$${gift.price}</p>` : ''}
+                    <div class="d-flex flex-wrap gap-2">
+                        ${gift.tags.map(tag => `<span class="badge bg-primary" style="font-size: 0.8rem;">${tag.name}</span>`).join('')}
+                    </div>
+                </div>
+            </div>
+        `).join('');
     }
 
     async handleSave() {
@@ -114,95 +158,9 @@ class RecipientProfile {
         }
     }
 
-    handleSearch() {
-        clearTimeout(this.searchTimeout);
-        this.searchTimeout = setTimeout(() => this.performSearch(), 300);
-    }
-
-    async performSearch() {
-        const query = this.searchInput.value.trim();
-        if (!query) {
-            this.loadRecentGifts();
-            return;
-        }
-        
-        try {
-            const response = await fetch(`/api/gifts/search/?q=${encodeURIComponent(query)}`);
-            const gifts = await response.json();
-            this.displaySearchResults(gifts);
-        } catch (error) {
-            console.error('Error:', error);
-        }
-    }
-
-    async loadRecentGifts() {
-        try {
-            const response = await fetch('/api/gifts/recent/');
-            const gifts = await response.json();
-            this.displaySearchResults(gifts);
-        } catch (error) {
-            console.error('Error:', error);
-        }
-    }
-
-    displaySearchResults(gifts) {
-        this.searchResults.innerHTML = gifts.map(gift => `
-            <div class="gift-card gift-search-item" data-gift-id="${gift.id}">
-                <div class="empty-img">
-                    ${gift.image_url 
-                        ? `<img src="${gift.image_url}" alt="${gift.title}" class="gift-image">`
-                        : '<i class="bi bi-image-fill" style="font-size: 2rem; opacity: 0.5;"></i>'
-                    }
-                </div>
-                <div class="p-4">
-                    <h5 class="fw-bold mb-2">${gift.title}</h5>
-                    <p class="text-primary fw-bold mb-3">$${gift.price}</p>
-                    <div class="d-flex flex-wrap gap-2">
-                        ${gift.tags.map(tag => `
-                            <span class="badge bg-primary">${tag.name}</span>
-                        `).join('')}
-                    </div>
-                </div>
-            </div>
-        `).join('');
-        
-        // Add click handlers
-        this.searchResults.querySelectorAll('.gift-search-item').forEach(item => {
-            item.addEventListener('click', () => this.addGiftToRecipient(item.dataset.giftId));
-        });
-    }
-
-    async addGiftToRecipient(giftId) {
-        try {
-            const response = await fetch(`/api/recipients/${this.recipientId}/gifts/`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
-                },
-                body: JSON.stringify({ gift_id: giftId })
-            });
-            
-            if (response.ok) {
-                window.location.reload();
-            } else {
-                const error = await response.json();
-                alert(error.error || 'Failed to add gift');
-            }
-        } catch (error) {
-            console.error('Error:', error);
-            alert('Failed to add gift');
-        }
-    }
-
     handleModalHidden() {
         this.editForm.reset();
         this.isSubmitting = false;
-    }
-
-    handleSearchModalHidden() {
-        this.searchInput.value = '';
-        this.searchResults.innerHTML = '';
     }
 
     toggleView(type, savePreference = true) {
@@ -258,6 +216,29 @@ class RecipientProfile {
     
     updateInterestsInput() {
         this.interestsInput.value = Array.from(this.interests).join(',');
+    }
+
+    async addGiftToRecipient(giftId) {
+        try {
+            const response = await fetch(`/api/recipients/${this.recipientId}/gifts/`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                },
+                body: JSON.stringify({ gift_id: giftId })
+            });
+            
+            if (response.ok) {
+                window.location.reload();
+            } else {
+                const error = await response.json();
+                alert(error.error || 'Failed to add gift');
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            alert('Failed to add gift');
+        }
     }
 }
 

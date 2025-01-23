@@ -43,7 +43,7 @@
                 </div>
 
                 <!-- Search Form -->
-                {% with preserved_params=current_filters placeholder="Search gift ideas..." %}
+                {% with preserved_params=current_filters placeholder="Search gift ideas..." input_id="giftSearch" search_query=request.GET.search %}
                     {% include 'includes/search_bar.html' %}
                 {% endwith %}
 
