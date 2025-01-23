@@ -2,6 +2,7 @@ from django.db import models
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.utils import timezone
+from django.db import transaction
 
 class Tag(models.Model):
     """Model for categorizing gifts and recipients."""
@@ -99,6 +100,7 @@ class PurchaseRecord(models.Model):
     class Meta:
         ordering = ['-purchase_date']
 
+    @transaction.atomic
     def save(self, *args, **kwargs):
         # Update gift status to 'gifted' when creating a purchase record
         if not self.pk:  # Only on creation
