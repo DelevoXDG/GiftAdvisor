@@ -62,7 +62,7 @@
                             <div class="mb-4">
                                 <h2 class="fw-bold mb-3" style="font-size: 1.5rem;">{{ gift.title }}</h2>
                                 <div class="d-flex flex-wrap gap-2 mb-3">
-                                    <span class="badge {% if gift.status == 'idea' %}bg-warning{% else %}bg-info{% endif %} rounded-pill">
+                                    <span class="badge {% if gift.status == 'idea' %}bg-warning{% else %}bg-success{% endif %} rounded-pill">
                                         {{ gift.get_status_display }}
                                     </span>
                                     {% for tag in gift.tags.all|slice:":5" %}
@@ -162,7 +162,7 @@
                                             <h5 class="fw-bold mb-2" style="font-size: 1.1rem; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;" title="{{ similar_gift.title }}">{{ similar_gift.title }}</h5>
                                             <p class="text-primary fw-bold mb-3" style="font-size: 0.95rem;">${{ similar_gift.price }}</p>
                                             <div class="d-flex flex-wrap gap-2" style="min-height: calc(2 * 1.5rem);">
-                                                <span class="badge {% if similar_gift.status == 'idea' %}bg-warning{% else %}bg-info{% endif %}" style="font-size: 0.8rem;">
+                                                <span class="badge {% if similar_gift.status == 'idea' %}bg-success{% else %}bg-info{% endif %}" style="font-size: 0.8rem;">
                                                     {{ similar_gift.get_status_display }}
                                                 </span>
                                                 {% for tag in similar_gift.tags.all|slice:":3" %}

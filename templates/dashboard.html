@@ -167,7 +167,7 @@
                                         <h5 class="gift-title text-truncate mb-2">{{ gift.title }}</h5>
                                         <p class="gift-price text-primary mb-2">${{ gift.price }}</p>
                                         <div class="d-flex flex-wrap gap-2">
-                                            <span class="badge {% if gift.status == 'idea' %}bg-warning{% else %}bg-info{% endif %}">
+                                            <span class="badge {% if gift.status == 'idea' %}bg-warning{% else %}bg-success{% endif %}">
                                                 {{ gift.get_status_display }}
                                             </span>
                                             {% for tag in gift.tags.all|slice:":3" %}
@@ -194,7 +194,7 @@
                                         <h5 class="gift-title text-truncate mb-2">{{ gift.title }}</h5>
                                         <p class="gift-price text-primary mb-2">${{ gift.price }}</p>
                                         <div class="d-flex flex-wrap gap-2">
-                                            <span class="badge {% if gift.status == 'idea' %}bg-warning{% else %}bg-info{% endif %}">
+                                            <span class="badge {% if gift.status == 'idea' %}bg-warning{% else %}bg-success{% endif %}">
                                                 {{ gift.get_status_display }}
                                             </span>
                                             {% for tag in gift.tags.all|slice:":3" %}
