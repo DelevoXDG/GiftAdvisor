@@ -341,6 +341,25 @@ def add_gift(request):
 class RecipientProfileView(LoginRequiredMixin, TemplateView):
     template_name = 'recipient_profile.html'
     
+    def post(self, request, *args, **kwargs):
+        recipient_id = kwargs.get('recipient_id')
+        recipient = get_object_or_404(Recipient, id=recipient_id, user=request.user)
+        
+        # Handle recipient update
+        recipient.name = request.POST.get('name')
+        recipient.relationship = request.POST.get('relationship')
+        recipient.birth_date = request.POST.get('birth_date') or None
+        recipient.notes = request.POST.get('notes', '')
+        recipient.save()
+        
+        # Handle interests
+        if 'interests' in request.POST:
+            interests = request.POST.getlist('interests')
+            recipient.interests.set(interests)
+        
+        messages.success(request, f"{recipient.name}'s details have been updated successfully.")
+        return redirect('recipient_profile', recipient_id=recipient_id)
+    
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         recipient_id = kwargs.get('recipient_id')
