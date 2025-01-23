@@ -221,7 +221,7 @@
                                     <div class="gift-item shadow-sm hover-shadow-md">
                                         <div class="empty-img">
                                             {% if gift.image_url %}
-                                                <img src="{{ gift.image_url }}" alt="{{ gift.title }}" class="gift-image">
+                                                <img src="{{ gift.image_url }}" alt="{{ gift.title }}" loading="lazy" class="gift-image">
                                             {% else %}
                                                 <i class="bi bi-image-fill"></i>
                                             {% endif %}
@@ -248,7 +248,7 @@
                                     <div class="gift-card">
                                         <div class="empty-img">
                                             {% if gift.image_url %}
-                                                <img src="{{ gift.image_url }}" alt="{{ gift.title }}" class="gift-image">
+                                                <img src="{{ gift.image_url }}" alt="{{ gift.title }}" loading="lazy" class="gift-image">
                                             {% else %}
                                                 <i class="bi bi-image-fill"></i>
                                             {% endif %}

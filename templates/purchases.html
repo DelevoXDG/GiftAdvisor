@@ -55,6 +55,7 @@
                                                 {% if purchase.gift.image_url %}
                                                     <img src="{{ purchase.gift.image_url }}" 
                                                          alt="{{ purchase.gift.title }}" 
+                                                         loading="lazy"
                                                          class="w-100 h-100 rounded-3 object-fit-cover">
                                                 {% else %}
                                                     <div class="w-100 h-100 rounded-3 bg-light d-flex align-items-center justify-content-center">

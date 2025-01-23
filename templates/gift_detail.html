@@ -24,6 +24,7 @@
                                 {% if gift.image_url %}
                                     <img src="{{ gift.image_url }}" 
                                          alt="{{ gift.title }}" 
+                                         loading="lazy"
                                          class="w-100 h-100 object-fit-contain">
                                 {% else %}
                                     <div class="w-100 h-100 d-flex align-items-center justify-content-center">
