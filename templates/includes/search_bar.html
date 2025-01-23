@@ -1,0 +1,32 @@
+<!-- Search Bar -->
+<form class="mb-4" method="GET">
+    <div class="search-group">
+        <div class="search-input-wrapper">
+            <i class="bi bi-search search-icon"></i>
+            <input type="text" 
+                   name="search" 
+                   class="search-input" 
+                   placeholder="{{ placeholder|default:'Search...' }}"
+                   value="{{ search_query }}"
+                   autocomplete="off"
+                   spellcheck="false"
+                   {% if input_id %}id="{{ input_id }}"{% endif %}>
+            <!-- Preserve filter parameters -->
+            {% if request.GET.price_range %}
+                <input type="hidden" name="price_range" value="{{ request.GET.price_range }}">
+            {% endif %}
+            {% if request.GET.recipient %}
+                <input type="hidden" name="recipient" value="{{ request.GET.recipient }}">
+            {% endif %}
+            {% if request.GET.status %}
+                <input type="hidden" name="status" value="{{ request.GET.status }}">
+            {% endif %}
+            {% if request.GET.sort %}
+                <input type="hidden" name="sort" value="{{ request.GET.sort }}">
+            {% endif %}
+            <button class="search-button" type="submit">
+                <i class="bi bi-search"></i>
+            </button>
+        </div>
+    </div>
+</form> 

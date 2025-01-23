@@ -1,0 +1,579 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block extra_css %}
+<style>
+    /* Consistent button and input styling */
+    .btn {
+        border-radius: 50rem;
+    }
+
+    .form-control, .form-select {
+        border-radius: 0.75rem;
+    }
+
+    /* Action buttons styling */
+    .action-btn {
+        box-shadow: 0 .2rem .3rem rgba(0,0,0,.1);
+        transition: all 0.2s ease-in-out;
+    }
+
+    .action-btn:hover {
+        box-shadow: 0 .3rem .5rem rgba(0,0,0,.15);
+        transform: translateY(-1px);
+    }
+
+    /* Font consistency */
+    .recipient-name {
+        font-size: 1.75rem;
+    }
+
+    .section-title {
+        font-size: 1.5rem;
+    }
+
+    .gift-title {
+        font-size: 1.25rem;
+    }
+
+    .gift-price {
+        font-size: 1.1rem;
+    }
+
+    .tag-suggestions {
+        position: absolute;
+        top: 100%;
+        left: 0;
+        right: 0;
+        background: white;
+        border: 1px solid var(--border-color);
+        border-radius: 0.75rem;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        max-height: 200px;
+        overflow-y: auto;
+        z-index: 1000;
+    }
+
+    .tag-suggestion {
+        padding: 0.5rem 1rem;
+        cursor: pointer;
+        transition: background-color 0.15s ease;
+    }
+
+    .tag-suggestion:hover,
+    .tag-suggestion.selected {
+        background-color: var(--hover-color);
+        color: var(--primary-color);
+    }
+
+    .tag-suggestion + .tag-suggestion {
+        border-top: 1px solid var(--border-color);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="d-flex">
+    <!-- Left Sidebar -->
+    <div class="sidebar mt-4">
+        <div class="mb-5">
+            <h5 class="text-muted mb-3">Sections</h5>
+            <a href="{% url 'index' %}" class="sidebar-link {% if request.resolver_match.url_name == 'index' %}active{% endif %}">
+                <i class="bi bi-gift"></i>
+                <span>Gift Ideas</span>
+            </a>
+            <a href="{% url 'recipients' %}" class="sidebar-link {% if request.resolver_match.url_name == 'recipients' or request.resolver_match.url_name == 'recipient_profile' %}active{% endif %}">
+                <i class="bi bi-people"></i>
+                <span>Recipients</span>
+            </a>
+            <a href="{% url 'purchases' %}" class="sidebar-link {% if request.resolver_match.url_name == 'purchases' or request.resolver_match.url_name == 'record_purchase' or request.resolver_match.url_name == 'update_purchase_feedback' %}active{% endif %}">
+                <i class="bi bi-bag-check"></i>
+                <span>Purchases</span>
+            </a>
+        </div>
+        <div>
+            <h5 class="text-muted mb-3">Settings</h5>
+            <a href="{% url 'preferences' %}" class="sidebar-link {% if request.resolver_match.url_name == 'preferences' %}active{% endif %}">
+                <i class="bi bi-gear"></i>
+                <span>Preferences</span>
+            </a>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <div class="container py-4">
+            <!-- Back Button -->
+            <a href="{% url 'recipients' %}" class="btn btn-link text-decoration-none mb-4">
+                <i class="bi bi-arrow-left"></i>
+                <span>Back to Recipients</span>
+            </a>
+
+            <!-- Profile Section -->
+            <div class="card rounded-4 border-0 shadow mb-4">
+                <div class="card-body p-4">
+                    <div class="d-flex justify-content-between align-items-start mb-4">
+                        <div class="d-flex align-items-center gap-3">
+                            <i class="bi bi-person-circle text-muted" style="font-size: 2.5rem;"></i>
+                            <div>
+                                <h2 class="fw-bold mb-1" style="font-size: 1.75rem;">{{ recipient.name }}</h2>
+                                <span class="badge rounded-pill bg-primary">{{ recipient.get_relationship_display }}</span>
+                            </div>
+                        </div>
+                        <button class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#editRecipientModal">
+                            <i class="bi bi-pencil me-2"></i>
+                            Edit Details
+                        </button>
+                    </div>
+
+                    {% if recipient.birth_date or recipient.interests.all or recipient.notes %}
+                        <div class="profile-details">
+                            {% if recipient.birth_date %}
+                                <div class="mb-3">
+                                    <h6 class="fw-bold mb-2" style="font-size: 0.9rem;">Birthday</h6>
+                                    <p class="mb-0" style="font-size: 0.95rem;">{{ recipient.birth_date|date:"d.m.Y" }}</p>
+                                </div>
+                            {% endif %}
+
+                            {% if recipient.interests.all %}
+                                <div class="mb-3">
+                                    <h6 class="fw-bold mb-2" style="font-size: 0.9rem;">Interests</h6>
+                                    <div class="d-flex flex-wrap gap-2">
+                                        {% for interest in recipient.interests.all %}
+                                            <span class="badge rounded-pill bg-secondary" style="font-size: 0.8rem;">{{ interest.name }}</span>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                            {% endif %}
+
+                            {% if recipient.notes %}
+                                <div>
+                                    <h6 class="fw-bold mb-2" style="font-size: 0.9rem;">Notes</h6>
+                                    <p class="mb-0" style="font-size: 0.95rem;">{{ recipient.notes }}</p>
+                                </div>
+                            {% endif %}
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Gift Ideas Section -->
+            <div class="card rounded-4 border-0 shadow">
+                <div class="card-body p-4">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h2 class="fw-bold" style="font-size: 1.75rem;">Gift Ideas</h2>
+                        <div class="d-flex gap-3">
+                            {% include 'includes/view_toggle.html' with grid_view_id="giftGrid" list_view_id="giftList" view_storage_key="giftViewMode" %}
+                            <button class="btn btn-primary d-flex align-items-center gap-2 rounded-pill shadow-sm hover-shadow-md" data-bs-toggle="modal" data-bs-target="#addGiftModal">
+                                <i class="bi bi-plus-lg"></i>
+                                <span>Add Gift Idea</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Search Form -->
+                    {% with preserved_params=current_filters placeholder="Search gift ideas..." input_id="giftSearch" search_query=request.GET.search %}
+                        {% include 'includes/search_bar.html' %}
+                    {% endwith %}
+
+                    <form id="filterForm" class="mb-4" method="GET">
+                        <!-- Preserve search query -->
+                        {% if request.GET.search %}
+                            <input type="hidden" name="search" value="{{ request.GET.search }}">
+                        {% endif %}
+                        <div class="row g-3">
+                            <div class="col-md-4">
+                                <label class="form-label">Price Range</label>
+                                <select class="form-select" name="price_range">
+                                    <option value="">All Prices</option>
+                                    <option value="under_25" {% if current_filters.price_range == 'under_25' %}selected{% endif %}>Under $25</option>
+                                    <option value="25_50" {% if current_filters.price_range == '25_50' %}selected{% endif %}>$25 - $50</option>
+                                    <option value="50_100" {% if current_filters.price_range == '50_100' %}selected{% endif %}>$50 - $100</option>
+                                    <option value="over_100" {% if current_filters.price_range == 'over_100' %}selected{% endif %}>Over $100</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">Status</label>
+                                <select class="form-select" name="status">
+                                    <option value="">All Statuses</option>
+                                    {% for value, label in status_choices %}
+                                        <option value="{{ value }}" {% if current_filters.status == value %}selected{% endif %}>
+                                            {{ label }}
+                                        </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">Sort By</label>
+                                <select class="form-select" name="sort">
+                                    <option value="recent" {% if current_filters.sort == 'recent' %}selected{% endif %}>Most Recent</option>
+                                    <option value="price_low" {% if current_filters.sort == 'price_low' %}selected{% endif %}>Price: Low to High</option>
+                                    <option value="price_high" {% if current_filters.sort == 'price_high' %}selected{% endif %}>Price: High to Low</option>
+                                </select>
+                            </div>
+                        </div>
+                    </form>
+
+                    {% if gifts %}
+                        <div id="giftList" class="gift-list d-none">
+                            {% for gift in gifts %}
+                                <a href="{% url 'gift_detail' gift.id %}" class="text-decoration-none">
+                                    <div class="gift-item shadow-sm hover-shadow-md">
+                                        <div class="empty-img">
+                                            {% if gift.image_url %}
+                                                <img src="{{ gift.image_url }}" alt="{{ gift.title }}" loading="lazy" class="gift-image">
+                                            {% else %}
+                                                <i class="bi bi-image-fill"></i>
+                                            {% endif %}
+                                        </div>
+                                        <div class="flex-grow-1">
+                                            <h5 class="gift-title text-truncate mb-2">{{ gift.title }}</h5>
+                                            <p class="gift-price text-primary mb-2">${{ gift.price }}</p>
+                                            <div class="d-flex flex-wrap gap-2">
+                                                <span class="badge {% if gift.status == 'idea' %}bg-warning{% else %}bg-success{% endif %}">
+                                                    {{ gift.get_status_display }}
+                                                </span>
+                                                {% for tag in gift.tags.all|slice:":3" %}
+                                                    <span class="badge bg-primary">{{ tag.name }}</span>
+                                                {% endfor %}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </a>
+                            {% endfor %}
+                        </div>
+                        <div id="giftGrid" class="gift-grid">
+                            {% for gift in gifts %}
+                                <a href="{% url 'gift_detail' gift.id %}" class="text-decoration-none">
+                                    <div class="gift-card">
+                                        <div class="empty-img">
+                                            {% if gift.image_url %}
+                                                <img src="{{ gift.image_url }}" alt="{{ gift.title }}" loading="lazy" class="gift-image">
+                                            {% else %}
+                                                <i class="bi bi-image-fill"></i>
+                                            {% endif %}
+                                        </div>
+                                        <div class="p-4">
+                                            <h5 class="gift-title text-truncate mb-2">{{ gift.title }}</h5>
+                                            <p class="gift-price text-primary mb-2">${{ gift.price }}</p>
+                                            <div class="d-flex flex-wrap gap-2">
+                                                <span class="badge {% if gift.status == 'idea' %}bg-warning{% else %}bg-success{% endif %}">
+                                                    {{ gift.get_status_display }}
+                                                </span>
+                                                {% for tag in gift.tags.all|slice:":3" %}
+                                                    <span class="badge bg-primary">{{ tag.name }}</span>
+                                                {% endfor %}
+                                                {% if gift.tags.count > 3 %}
+                                                    <span class="badge bg-secondary">+{{ gift.tags.count|add:"-3" }}</span>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </a>
+                            {% endfor %}
+                        </div>
+
+                        <!-- Pagination -->
+                        {% if gifts.has_other_pages %}
+                            <nav class="mt-4">
+                                <ul class="pagination justify-content-center">
+                                    {% if gifts.has_previous %}
+                                        <li class="page-item">
+                                            <a class="page-link rounded-start-pill" href="?page={{ gifts.previous_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.price_range %}&price_range={{ request.GET.price_range }}{% endif %}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}{% if request.GET.sort %}&sort={{ request.GET.sort }}{% endif %}">
+                                                <i class="bi bi-chevron-left"></i>
+                                            </a>
+                                        </li>
+                                    {% endif %}
+
+                                    {% for num in gifts.paginator.page_range %}
+                                        {% if gifts.number == num %}
+                                            <li class="page-item active">
+                                                <span class="page-link">{{ num }}</span>
+                                            </li>
+                                        {% elif num > gifts.number|add:'-3' and num < gifts.number|add:'3' %}
+                                            <li class="page-item">
+                                                <a class="page-link" href="?page={{ num }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.price_range %}&price_range={{ request.GET.price_range }}{% endif %}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}{% if request.GET.sort %}&sort={{ request.GET.sort }}{% endif %}">
+                                                    {{ num }}
+                                                </a>
+                                            </li>
+                                        {% endif %}
+                                    {% endfor %}
+
+                                    {% if gifts.has_next %}
+                                        <li class="page-item">
+                                            <a class="page-link rounded-end-pill" href="?page={{ gifts.next_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.price_range %}&price_range={{ request.GET.price_range }}{% endif %}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}{% if request.GET.sort %}&sort={{ request.GET.sort }}{% endif %}">
+                                                <i class="bi bi-chevron-right"></i>
+                                            </a>
+                                        </li>
+                                    {% endif %}
+                                </ul>
+                            </nav>
+                        {% endif %}
+                    {% else %}
+                        <div class="text-center py-5">
+                            <i class="bi bi-gift mb-4" style="font-size: 3rem; opacity: 0.5;"></i>
+                            <h4 class="fw-bold" style="font-size: 1.25rem;">No gift ideas found</h4>
+                            <p class="text-muted" style="font-size: 0.95rem;">Add your first gift idea for {{ recipient.name }}.</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Edit Recipient Modal -->
+<div class="modal fade" id="editRecipientModal" tabindex="-1" data-bs-backdrop="static">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Edit {{ recipient.name }}'s Details</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form method="POST" action="{% url 'recipient_profile' recipient.id %}" id="editRecipientForm">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label class="form-label">Name</label>
+                        <input type="text" name="name" class="form-control" value="{{ recipient.name }}" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Relationship</label>
+                        <select name="relationship" class="form-select" required>
+                            {% for value, label in relationship_choices %}
+                                <option value="{{ value }}" {% if recipient.relationship == value %}selected{% endif %}>
+                                    {{ label }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Birth Date</label>
+                        <input type="date" name="birth_date" class="form-control" value="{{ recipient.birth_date|date:'Y-m-d' }}">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Interests</label>
+                        <div class="interests-container">
+                            <div id="selectedInterests" class="d-flex gap-2 mb-2 flex-wrap">
+                                {% for interest in recipient.interests.all %}
+                                    <span class="badge rounded-pill bg-primary d-flex align-items-center gap-1">
+                                        {{ interest.name }}
+                                        <button type="button" class="btn-close btn-close-white btn-sm" style="font-size: 0.5rem;"
+                                                onclick="removeInterest('{% url 'remove_recipient_interest' recipient.id interest.id %}')"></button>
+                                    </span>
+                                {% endfor %}
+                            </div>
+                            <div class="position-relative">
+                                <div class="d-flex gap-2">
+                                    <input type="text" 
+                                           id="interestInput" 
+                                           class="form-control" 
+                                           placeholder="Type an interest..."
+                                           autocomplete="off"
+                                           spellcheck="false">
+                                    <button type="button" class="btn btn-primary" onclick="addInterest('{% url 'add_recipient_interest' recipient.id %}')">
+                                        <i class="bi bi-plus-lg"></i>
+                                    </button>
+                                </div>
+                                <div id="tagSuggestions" class="tag-suggestions d-none">
+                                    <!-- Tag suggestions will be populated here -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Notes</label>
+                        <textarea name="notes" class="form-control" rows="3">{{ recipient.notes }}</textarea>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-danger me-auto rounded-pill" data-bs-toggle="modal" data-bs-target="#deleteConfirmationModal">
+                            <i class="bi bi-trash me-2"></i>
+                            Delete
+                        </button>
+                        <button type="button" class="btn btn-secondary rounded-pill" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-primary rounded-pill">Save Changes</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Add Gift Modal -->
+<div class="modal fade" id="addGiftModal" tabindex="-1" data-bs-backdrop="static">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Add Gift Idea for {{ recipient.name }}</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="search-container mb-4">
+                    <div class="modern-input-wrapper">
+                        <i class="bi bi-search input-icon"></i>
+                        <input type="text" 
+                               class="modern-input" 
+                               id="giftSearch"
+                               placeholder="Search gift ideas..."
+                               autocomplete="off"
+                               spellcheck="false">
+                    </div>
+                </div>
+                <div id="searchResults" class="gift-grid">
+                    <!-- Gift ideas will be loaded here -->
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteConfirmationModal" tabindex="-1" data-bs-backdrop="static">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Confirm Delete</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to delete {{ recipient.name }}? This action cannot be undone.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary rounded-pill" data-bs-dismiss="modal">Cancel</button>
+                <a href="{% url 'delete_recipient' recipient.id %}" class="btn btn-danger rounded-pill">Delete</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Elements
+        const interestInput = document.getElementById('interestInput');
+        const tagSuggestions = document.getElementById('tagSuggestions');
+        let selectedIndex = -1;
+        
+        // Show tag suggestions as user types
+        interestInput.addEventListener('input', () => {
+            const query = interestInput.value.toLowerCase().trim();
+            if (query.length === 0) {
+                tagSuggestions.classList.add('d-none');
+                return;
+            }
+            
+            // Filter matching tags
+            const matches = Array.from(document.querySelectorAll('#selectedInterests .badge'))
+                .map(badge => badge.textContent.trim())
+                .filter(tag => tag.toLowerCase().includes(query))
+                .slice(0, 5); // Limit to 5 suggestions
+            
+            if (matches.length > 0) {
+                // Populate suggestions
+                tagSuggestions.innerHTML = matches
+                    .map((tag, index) => `
+                        <div class="tag-suggestion" data-index="${index}" data-name="${tag}">
+                            ${tag}
+                        </div>
+                    `).join('');
+                
+                // Add click handlers to suggestions
+                tagSuggestions.querySelectorAll('.tag-suggestion').forEach(suggestion => {
+                    suggestion.addEventListener('click', () => {
+                        interestInput.value = suggestion.dataset.name;
+                        tagSuggestions.classList.add('d-none');
+                        addInterest('{% url 'add_recipient_interest' recipient.id %}');
+                    });
+                });
+                
+                tagSuggestions.classList.remove('d-none');
+                selectedIndex = -1;
+            } else {
+                tagSuggestions.classList.add('d-none');
+            }
+        });
+        
+        // Handle keyboard navigation
+        interestInput.addEventListener('keydown', (e) => {
+            const suggestions = tagSuggestions.querySelectorAll('.tag-suggestion');
+            if (suggestions.length === 0) return;
+            
+            if (e.key === 'ArrowDown') {
+                e.preventDefault();
+                selectedIndex = Math.min(selectedIndex + 1, suggestions.length - 1);
+                updateSelection(suggestions);
+            } else if (e.key === 'ArrowUp') {
+                e.preventDefault();
+                selectedIndex = Math.max(selectedIndex - 1, -1);
+                updateSelection(suggestions);
+            } else if (e.key === 'Enter' && selectedIndex >= 0) {
+                e.preventDefault();
+                const selected = suggestions[selectedIndex];
+                interestInput.value = selected.dataset.name;
+                tagSuggestions.classList.add('d-none');
+                addInterest('{% url 'add_recipient_interest' recipient.id %}');
+            }
+        });
+        
+        // Update visual selection
+        function updateSelection(suggestions) {
+            suggestions.forEach((suggestion, index) => {
+                if (index === selectedIndex) {
+                    suggestion.classList.add('selected');
+                    suggestion.scrollIntoView({ block: 'nearest' });
+                } else {
+                    suggestion.classList.remove('selected');
+                }
+            });
+        }
+        
+        // Hide suggestions when clicking outside
+        document.addEventListener('click', (e) => {
+            if (!interestInput.contains(e.target) && !tagSuggestions.contains(e.target)) {
+                tagSuggestions.classList.add('d-none');
+            }
+        });
+    });
+
+    // Handle adding interests via AJAX
+    async function addInterest(url) {
+        const interest = document.getElementById('interestInput').value.trim();
+        if (!interest) return;
+
+        const formData = new FormData();
+        formData.append('interest', interest);
+        formData.append('csrfmiddlewaretoken', document.querySelector('[name=csrfmiddlewaretoken]').value);
+
+        try {
+            const response = await fetch(url, {
+                method: 'POST',
+                body: formData
+            });
+            if (response.ok) {
+                window.location.reload();
+            }
+        } catch (error) {
+            console.error('Error adding interest:', error);
+        }
+    }
+
+    // Handle removing interests via AJAX
+    async function removeInterest(url) {
+        const formData = new FormData();
+        formData.append('csrfmiddlewaretoken', document.querySelector('[name=csrfmiddlewaretoken]').value);
+
+        try {
+            const response = await fetch(url, {
+                method: 'POST',
+                body: formData
+            });
+            if (response.ok) {
+                window.location.reload();
+            }
+        } catch (error) {
+            console.error('Error removing interest:', error);
+        }
+    }
+</script>
+{% endblock %}
+{% endblock %} 

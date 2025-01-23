@@ -1,0 +1,488 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="d-flex">
+    <!-- Left Sidebar -->
+    <div class="sidebar mt-4">
+        <div class="mb-5">
+            <h5 class="text-muted mb-3">Sections</h5>
+            <a href="{% url 'index' %}" class="sidebar-link {% if request.resolver_match.url_name == 'index' %}active{% endif %}">
+                <i class="bi bi-gift"></i>
+                <span>Gift Ideas</span>
+            </a>
+            <a href="{% url 'recipients' %}" class="sidebar-link {% if request.resolver_match.url_name == 'recipients' or request.resolver_match.url_name == 'recipient_profile' %}active{% endif %}">
+                <i class="bi bi-people"></i>
+                <span>Recipients</span>
+            </a>
+            <a href="{% url 'purchases' %}" class="sidebar-link {% if request.resolver_match.url_name == 'purchases' or request.resolver_match.url_name == 'record_purchase' or request.resolver_match.url_name == 'update_purchase_feedback' %}active{% endif %}">
+                <i class="bi bi-bag-check"></i>
+                <span>Purchases</span>
+            </a>
+        </div>
+        <div>
+            <h5 class="text-muted mb-3">Settings</h5>
+            <a href="{% url 'preferences' %}" class="sidebar-link {% if request.resolver_match.url_name == 'preferences' %}active{% endif %}">
+                <i class="bi bi-gear"></i>
+                <span>Preferences</span>
+            </a>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <div class="container py-4">
+            <!-- AI Model Selection -->
+            <div class="card rounded-4 border-0 shadow mb-4">
+                <div class="card-body p-4">
+                    <h2 class="fw-bold mb-4" style="font-size: 1.75rem;">AI Model Settings</h2>
+                    
+                    <div class="mb-4">
+                        <h3 class="fw-bold mb-3" style="font-size: 1.25rem;">Current Model</h3>
+                        <div class="d-flex gap-2 align-items-start">
+                            <div class="flex-grow-1">
+                                <select class="form-select" id="currentModel">
+                                    <option value="none" {% if current_ai_model == 'none' %}selected{% endif %}>None selected</option>
+                                    <option value="openai" {% if current_ai_model == 'openai' %}selected{% endif %}>OpenAI</option>
+                                    <option value="deepseek" {% if current_ai_model == 'deepseek' %}selected{% endif %}>Deepseek</option>
+                                </select>
+                                <div class="form-text mt-1" id="modelChangeWarning" style="display: none;">
+                                    Switching to "None" will disable AI features including gift suggestions and smart tagging.
+                                </div>
+                            </div>
+                            <button type="button" class="btn btn-primary" id="confirmModelChange" style="display: none;">
+                                Confirm Change
+                            </button>
+                        </div>
+                    </div>
+
+                    {% if current_ai_model == 'none' %}
+                    <div class="alert alert-warning" role="alert">
+                        <h4 class="alert-heading mb-2" style="font-size: 1.1rem;">
+                            <i class="bi bi-exclamation-triangle me-2"></i>
+                            Limited Functionality
+                        </h4>
+                        <p class="mb-0" style="font-size: 0.95rem;">
+                            Without an AI model selected, the following features are disabled:
+                            <ul class="mb-0 mt-2">
+                                <li>Automatic gift suggestions</li>
+                                <li>Smart tagging for gifts</li>
+                                <li>Interest analysis for recipients</li>
+                            </ul>
+                        </p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- OpenAI Section -->
+            <div class="card rounded-4 border-0 shadow mb-4">
+                <div class="card-body p-4">
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                        <div>
+                            <h2 class="fw-bold mb-2" style="font-size: 1.75rem;">OpenAI</h2>
+                            <p class="text-muted mb-0" style="font-size: 0.95rem;">
+                                Add your OpenAI API key for gift suggestions and auto-tagging.
+                            </p>
+                        </div>
+                        {% if has_openai_key %}
+                            <span class="badge bg-success">Connected</span>
+                        {% else %}
+                            <span class="badge bg-secondary">Not Connected</span>
+                        {% endif %}
+                    </div>
+
+                    <div class="api-key-form">
+                        {% if has_openai_key %}
+                            <div class="d-flex align-items-center mb-3 bg-light rounded-3 p-3">
+                                <i class="bi bi-key-fill text-success me-2"></i>
+                                <code class="flex-grow-1">{{ openai_key_display }}</code>
+                                <button type="button" class="btn btn-sm btn-outline-danger ms-2" id="removeOpenAIKeyBtn">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </div>
+                        {% else %}
+                            <div class="modern-input-wrapper mb-3">
+                                <i class="bi bi-key input-icon"></i>
+                                <input type="text" 
+                                       id="openaiKey" 
+                                       class="modern-input" 
+                                       placeholder="sk-..." 
+                                       autocomplete="off"
+                                       spellcheck="false">
+                            </div>
+                            <div class="mb-3">
+                                <button type="button" class="btn btn-primary" id="saveOpenAIKeyBtn">Save Key</button>
+                            </div>
+                        {% endif %}
+                        
+                        {% if has_openai_key %}
+                        <div class="mb-3">
+                            <label for="openaiModel" class="form-label">Model</label>
+                            <div class="d-flex gap-2 align-items-start">
+                                <div class="flex-grow-1">
+                                    <select class="form-select" id="openaiModel">
+                                        <option value="" disabled selected>Loading available models...</option>
+                                    </select>
+                                </div>
+                                <button type="button" class="btn btn-primary" id="confirmOpenAIModelChange" style="display: none;">
+                                    Confirm
+                                </button>
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Deepseek Section -->
+            <div class="card rounded-4 border-0 shadow mb-4">
+                <div class="card-body p-4">
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                        <div>
+                            <h2 class="fw-bold mb-2" style="font-size: 1.75rem;">Deepseek</h2>
+                            <p class="text-muted mb-0" style="font-size: 0.95rem;">
+                                Add your Deepseek API key for gift suggestions and auto-tagging.
+                            </p>
+                        </div>
+                        {% if has_deepseek_key %}
+                            <span class="badge bg-success">Connected</span>
+                        {% else %}
+                            <span class="badge bg-secondary">Not Connected</span>
+                        {% endif %}
+                    </div>
+
+                    <div class="api-key-form">
+                        {% if has_deepseek_key %}
+                            <div class="d-flex align-items-center mb-3 bg-light rounded-3 p-3">
+                                <i class="bi bi-key-fill text-success me-2"></i>
+                                <code class="flex-grow-1">{{ deepseek_key_display }}</code>
+                                <button type="button" class="btn btn-sm btn-outline-danger ms-2" id="removeDeepseekKeyBtn">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </div>
+                        {% else %}
+                            <div class="modern-input-wrapper mb-3">
+                                <i class="bi bi-key input-icon"></i>
+                                <input type="text" 
+                                       id="deepseekKey" 
+                                       class="modern-input" 
+                                       placeholder="sk-..." 
+                                       autocomplete="off"
+                                       spellcheck="false">
+                            </div>
+                            <div class="mb-3">
+                                <button type="button" class="btn btn-primary" id="saveDeepseekKeyBtn">Save Key</button>
+                            </div>
+                        {% endif %}
+                        
+                        {% if has_deepseek_key %}
+                        <div class="mb-3">
+                            <label for="deepseekModel" class="form-label">Model</label>
+                            <div class="d-flex gap-2 align-items-start">
+                                <div class="flex-grow-1">
+                                    <select class="form-select" id="deepseekModel">
+                                        <option value="" disabled selected>Loading available models...</option>
+                                    </select>
+                                </div>
+                                <button type="button" class="btn btn-primary" id="confirmDeepseekModelChange" style="display: none;">
+                                    Confirm
+                                </button>
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% block extra_css %}
+<style>
+    /* Preferences specific styles */
+    .preferences-section {
+        margin-bottom: 2rem;
+    }
+
+    .preferences-title {
+        font-size: 1.5rem;
+        font-weight: 600;
+        margin-bottom: 1rem;
+    }
+
+    .preferences-description {
+        color: var(--bs-gray-600);
+        font-size: 0.9rem;
+        margin-bottom: 1.5rem;
+    }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+class Preferences {
+    constructor() {
+        this.currentModelSelect = document.getElementById('currentModel');
+        this.confirmModelChangeBtn = document.getElementById('confirmModelChange');
+        this.modelChangeWarning = document.getElementById('modelChangeWarning');
+        this.openaiKeyInput = document.getElementById('openaiKey');
+        this.saveOpenAIKeyBtn = document.getElementById('saveOpenAIKeyBtn');
+        this.removeOpenAIKeyBtn = document.getElementById('removeOpenAIKeyBtn');
+        this.openaiModelSelect = document.getElementById('openaiModel');
+        this.confirmOpenAIModelChangeBtn = document.getElementById('confirmOpenAIModelChange');
+        this.deepseekKeyInput = document.getElementById('deepseekKey');
+        this.saveDeepseekKeyBtn = document.getElementById('saveDeepseekKeyBtn');
+        this.removeDeepseekKeyBtn = document.getElementById('removeDeepseekKeyBtn');
+        this.deepseekModelSelect = document.getElementById('deepseekModel');
+        this.confirmDeepseekModelChangeBtn = document.getElementById('confirmDeepseekModelChange');
+        
+        this.currentAIModel = '{{ current_ai_model }}';
+        this.currentOpenAIModel = '{{ openai_model }}';
+        this.currentDeepseekModel = '{{ deepseek_model }}';
+        
+        this.initializeEventListeners();
+        this.loadAvailableModels();
+    }
+
+    initializeEventListeners() {
+        this.currentModelSelect.addEventListener('change', () => this.handleModelSelectChange());
+        if (this.confirmModelChangeBtn) {
+            this.confirmModelChangeBtn.addEventListener('click', () => this.handleModelChange());
+        }
+        
+        if (this.saveOpenAIKeyBtn) {
+            this.saveOpenAIKeyBtn.addEventListener('click', () => this.handleSaveKey('openai'));
+        }
+        if (this.saveDeepseekKeyBtn) {
+            this.saveDeepseekKeyBtn.addEventListener('click', () => this.handleSaveKey('deepseek'));
+        }
+        if (this.removeOpenAIKeyBtn) {
+            this.removeOpenAIKeyBtn.addEventListener('click', () => this.handleRemoveKey('openai'));
+        }
+        if (this.removeDeepseekKeyBtn) {
+            this.removeDeepseekKeyBtn.addEventListener('click', () => this.handleRemoveKey('deepseek'));
+        }
+        if (this.openaiModelSelect) {
+            this.openaiModelSelect.addEventListener('change', () => this.handleModelTypeSelectChange('openai'));
+        }
+        if (this.confirmOpenAIModelChangeBtn) {
+            this.confirmOpenAIModelChangeBtn.addEventListener('click', () => this.handleModelTypeChange('openai'));
+        }
+        if (this.deepseekModelSelect) {
+            this.deepseekModelSelect.addEventListener('change', () => this.handleModelTypeSelectChange('deepseek'));
+        }
+        if (this.confirmDeepseekModelChangeBtn) {
+            this.confirmDeepseekModelChangeBtn.addEventListener('click', () => this.handleModelTypeChange('deepseek'));
+        }
+    }
+
+    handleModelSelectChange() {
+        const newModel = this.currentModelSelect.value;
+        if (newModel === this.currentAIModel) {
+            this.confirmModelChangeBtn.style.display = 'none';
+            this.modelChangeWarning.style.display = 'none';
+            return;
+        }
+        
+        this.confirmModelChangeBtn.style.display = 'block';
+        if (newModel === 'none') {
+            this.modelChangeWarning.style.display = 'block';
+        } else {
+            this.modelChangeWarning.style.display = 'none';
+        }
+    }
+
+    handleModelTypeSelectChange(provider) {
+        const select = provider === 'openai' ? this.openaiModelSelect : this.deepseekModelSelect;
+        const confirmBtn = provider === 'openai' ? this.confirmOpenAIModelChangeBtn : this.confirmDeepseekModelChangeBtn;
+        const currentModel = provider === 'openai' ? this.currentOpenAIModel : this.currentDeepseekModel;
+        
+        if (select.value === currentModel) {
+            confirmBtn.style.display = 'none';
+            return;
+        }
+        
+        confirmBtn.style.display = 'block';
+    }
+
+    async handleModelChange() {
+        const model = this.currentModelSelect.value;
+        
+        try {
+            const response = await fetch('/api/preferences/current-model/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                },
+                body: JSON.stringify({ current_ai_model: model })
+            });
+            
+            const data = await response.json();
+            if (response.ok) {
+                window.location.reload();
+            } else {
+                alert(data.error || 'Failed to update AI model preference');
+                this.currentModelSelect.value = this.currentAIModel;
+                this.confirmModelChangeBtn.style.display = 'none';
+                this.modelChangeWarning.style.display = 'none';
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            alert('Failed to update AI model preference');
+            this.currentModelSelect.value = this.currentAIModel;
+            this.confirmModelChangeBtn.style.display = 'none';
+            this.modelChangeWarning.style.display = 'none';
+        }
+    }
+
+    async handleModelTypeChange(provider) {
+        const select = provider === 'openai' ? this.openaiModelSelect : this.deepseekModelSelect;
+        const confirmBtn = provider === 'openai' ? this.confirmOpenAIModelChangeBtn : this.confirmDeepseekModelChangeBtn;
+        const model = select.value;
+        
+        try {
+            const response = await fetch(`/api/preferences/${provider}-model/`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                },
+                body: JSON.stringify({ model: model })
+            });
+            
+            const data = await response.json();
+            if (response.ok) {
+                if (provider === 'openai') {
+                    this.currentOpenAIModel = model;
+                } else {
+                    this.currentDeepseekModel = model;
+                }
+                confirmBtn.style.display = 'none';
+            } else {
+                alert(data.error || `Failed to update ${provider} model`);
+                select.value = provider === 'openai' ? this.currentOpenAIModel : this.currentDeepseekModel;
+                confirmBtn.style.display = 'none';
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            alert(`Failed to update ${provider} model`);
+            select.value = provider === 'openai' ? this.currentOpenAIModel : this.currentDeepseekModel;
+            confirmBtn.style.display = 'none';
+        }
+    }
+
+    async handleSaveKey(provider) {
+        const input = provider === 'openai' ? this.openaiKeyInput : this.deepseekKeyInput;
+        const apiKey = input.value.trim();
+        
+        if (!apiKey) {
+            alert('Please enter an API key');
+            return;
+        }
+        
+        if (!apiKey.startsWith('sk-')) {
+            alert('Invalid API key format. API keys should start with "sk-"');
+            return;
+        }
+        
+        try {
+            const response = await fetch(`/api/preferences/${provider}-key/`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                },
+                body: JSON.stringify({ api_key: apiKey })
+            });
+            
+            const data = await response.json();
+            if (response.ok) {
+                window.location.reload();
+            } else {
+                alert(data.error || `Failed to save ${provider} API key`);
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            alert(`Failed to save ${provider} API key`);
+        }
+    }
+
+    async handleRemoveKey(provider) {
+        const confirmMessage = `Are you sure you want to remove your ${provider} API key? This will disable ${provider} features.`;
+        if (!confirm(confirmMessage)) {
+            return;
+        }
+        
+        try {
+            const response = await fetch(`/api/preferences/${provider}-key/`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                },
+                body: JSON.stringify({ api_key: null })
+            });
+            
+            const data = await response.json();
+            if (response.ok) {
+                window.location.reload();
+            } else {
+                alert(data.error || `Failed to remove ${provider} API key`);
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            alert(`Failed to remove ${provider} API key`);
+        }
+    }
+
+    async loadAvailableModels() {
+        if (this.openaiModelSelect) {
+            try {
+                const response = await fetch('/api/preferences/openai-models/');
+                if (response.ok) {
+                    const data = await response.json();
+                    this.openaiModelSelect.innerHTML = data.models.map(model => 
+                        `<option value="${model.id}" ${model.id === '{{ openai_model }}' ? 'selected' : ''}>
+                            ${model.name}
+                        </option>`
+                    ).join('');
+                } else {
+                    const error = await response.json();
+                    this.openaiModelSelect.innerHTML = `<option value="" disabled selected>${error.error || 'Failed to load models'}</option>`;
+                }
+            } catch (error) {
+                console.error('Error loading OpenAI models:', error);
+                this.openaiModelSelect.innerHTML = '<option value="" disabled selected>Failed to load models</option>';
+            }
+        }
+
+        if (this.deepseekModelSelect) {
+            try {
+                const response = await fetch('/api/preferences/deepseek-models/');
+                if (response.ok) {
+                    const data = await response.json();
+                    this.deepseekModelSelect.innerHTML = data.models.map(model => 
+                        `<option value="${model.id}" ${model.id === '{{ deepseek_model }}' ? 'selected' : ''}>
+                            ${model.name}
+                        </option>`
+                    ).join('');
+                } else {
+                    const error = await response.json();
+                    this.deepseekModelSelect.innerHTML = `<option value="" disabled selected>${error.error || 'Failed to load models'}</option>`;
+                }
+            } catch (error) {
+                console.error('Error loading Deepseek models:', error);
+                this.deepseekModelSelect.innerHTML = '<option value="" disabled selected>Failed to load models</option>';
+            }
+        }
+    }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    new Preferences();
+});
+</script>
+{% endblock %}
+{% endblock %} 

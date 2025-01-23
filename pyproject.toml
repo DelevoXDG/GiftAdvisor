@@ -12,6 +12,17 @@ djangorestframework = "^3.15.2"
 django-cors-headers = "^4.6.0"
 pillow = "^11.0.0"
 python-dotenv = "^1.0.1"
+psycopg2-binary = "^2.9.10"
+django-environ = "^0.11.2"
+django-allauth = "^65.3.1"
+requests = "^2.32.3"
+pyjwt = "^2.10.1"
+cryptography = "^44.0.0"
+faker = "^33.1.0"
+beautifulsoup4 = "^4.12.3"
+price-parser = "^0.3.4"
+lxml = "^5.1.0"
+openai = "^1.59.9"
 
 
 [build-system]

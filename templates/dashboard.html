@@ -1,0 +1,301 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="d-flex">
+    {% include 'includes/sidebar.html' %}
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <div class="container-fluid py-4">
+            <!-- Quick Add Container -->
+            <div class="quick-add-section mb-4">
+                <h2 class="fw-bold mb-3" style="font-size: 1.75rem;">Quick Add</h2>
+                <form id="quickAddForm">
+                    {% csrf_token %}
+                    <div class="search-group">
+                        <div class="search-input-wrapper">
+                            <i class="bi bi-link-45deg search-icon" style="font-size: 1.5rem;"></i>
+                            <input type="url" 
+                                   name="url"
+                                   class="search-input" 
+                                   placeholder="Paste a link to instantly add a gift idea..."
+                                   autocomplete="off"
+                                   spellcheck="false">
+                            <button type="submit" class="search-button" disabled>
+                                <i class="bi bi-plus-lg"></i>
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+
+            <div class="filters-section">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h2 class="fw-bold mb-3" style="font-size: 1.75rem;">Gift Ideas</h2>
+                    <div class="d-flex gap-3">
+                        {% include 'includes/view_toggle.html' with grid_view_id="giftGrid" list_view_id="giftList" view_storage_key="giftViewMode" %}
+                        <button class="btn btn-primary d-flex align-items-center gap-2 rounded-pill shadow-sm hover-shadow-md" data-bs-toggle="modal" data-bs-target="#addGiftModal">
+                            <i class="bi bi-plus-lg"></i>
+                            <span>Add Gift Idea</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Search Form -->
+                {% with preserved_params=current_filters placeholder="Search gift ideas..." input_id="giftSearch" search_query=request.GET.search %}
+                    {% include 'includes/search_bar.html' %}
+                {% endwith %}
+
+                <form id="filterForm" class="mb-4" method="GET">
+                    <!-- Preserve search query -->
+                    {% if request.GET.search %}
+                        <input type="hidden" name="search" value="{{ request.GET.search }}">
+                    {% endif %}
+                    <div class="row g-3">
+                        <div class="col-md-3">
+                            <label class="form-label">Price Range</label>
+                            <select class="form-select" name="price_range">
+                                <option value="">All Prices</option>
+                                <option value="under_25" {% if current_filters.price_range == 'under_25' %}selected{% endif %}>Under $25</option>
+                                <option value="25_50" {% if current_filters.price_range == '25_50' %}selected{% endif %}>$25 - $50</option>
+                                <option value="50_100" {% if current_filters.price_range == '50_100' %}selected{% endif %}>$50 - $100</option>
+                                <option value="over_100" {% if current_filters.price_range == 'over_100' %}selected{% endif %}>Over $100</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Recipients</label>
+                            <select class="form-select" name="recipient">
+                                <option value="">All Recipients</option>
+                                {% for value, label in relationship_choices %}
+                                    <option value="{{ value }}" {% if current_filters.recipient == value %}selected{% endif %}>
+                                        {{ label }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Status</label>
+                            <select class="form-select" name="status">
+                                <option value="">All Statuses</option>
+                                {% for value, label in status_choices %}
+                                    <option value="{{ value }}" {% if current_filters.status == value %}selected{% endif %}>
+                                        {{ label }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Sort By</label>
+                            <select class="form-select" name="sort">
+                                <option value="recent" {% if current_filters.sort == 'recent' %}selected{% endif %}>Most Recent</option>
+                                <option value="price_low" {% if current_filters.sort == 'price_low' %}selected{% endif %}>Price: Low to High</option>
+                                <option value="price_high" {% if current_filters.sort == 'price_high' %}selected{% endif %}>Price: High to Low</option>
+                            </select>
+                        </div>
+                    </div>
+                </form>
+
+                <!-- Gift List/Grid -->
+                {% if gifts %}
+                    <div id="giftList" class="gift-list d-none">
+                        {% for gift in gifts %}
+                            <a href="{% url 'gift_detail' gift.id %}" class="text-decoration-none">
+                                <div class="gift-item shadow-sm hover-shadow-md">
+                                    <div class="empty-img">
+                                        {% if gift.image_url %}
+                                            <img src="{{ gift.image_url }}" 
+                                                 alt="{{ gift.title }}" 
+                                                 loading="lazy"
+                                                 class="gift-image">
+                                        {% else %}
+                                            <i class="bi bi-image-fill"></i>
+                                        {% endif %}
+                                    </div>
+                                    <div class="flex-grow-1">
+                                        <h5 class="gift-title text-truncate mb-2">{{ gift.title }}</h5>
+                                        <p class="gift-price text-primary mb-2">${{ gift.price }}</p>
+                                        <div class="d-flex flex-wrap gap-2">
+                                            <span class="badge {% if gift.status == 'idea' %}bg-warning{% else %}bg-success{% endif %}">
+                                                {{ gift.get_status_display }}
+                                            </span>
+                                            {% for tag in gift.tags.all|slice:":3" %}
+                                                <span class="badge bg-primary">{{ tag.name }}</span>
+                                            {% endfor %}
+                                        </div>
+                                    </div>
+                                </div>
+                            </a>
+                        {% endfor %}
+                    </div>
+                    <div id="giftGrid" class="gift-grid">
+                        {% for gift in gifts %}
+                            <a href="{% url 'gift_detail' gift.id %}" class="text-decoration-none">
+                                <div class="gift-card">
+                                    <div class="empty-img">
+                                        {% if gift.image_url %}
+                                            <img src="{{ gift.image_url }}" 
+                                                 alt="{{ gift.title }}" 
+                                                 loading="lazy"
+                                                 class="gift-image">
+                                        {% else %}
+                                            <i class="bi bi-image-fill"></i>
+                                        {% endif %}
+                                    </div>
+                                    <div class="p-4">
+                                        <h5 class="gift-title text-truncate mb-2">{{ gift.title }}</h5>
+                                        <p class="gift-price text-primary mb-2">${{ gift.price }}</p>
+                                        <div class="d-flex flex-wrap gap-2">
+                                            <span class="badge {% if gift.status == 'idea' %}bg-warning{% else %}bg-success{% endif %}">
+                                                {{ gift.get_status_display }}
+                                            </span>
+                                            {% for tag in gift.tags.all|slice:":3" %}
+                                                <span class="badge bg-primary">{{ tag.name }}</span>
+                                            {% endfor %}
+                                        </div>
+                                    </div>
+                                </div>
+                            </a>
+                        {% endfor %}
+                    </div>
+
+                    <!-- Pagination -->
+                    {% if gifts.has_other_pages %}
+                        <nav class="mt-4">
+                            <ul class="pagination justify-content-center">
+                                {% if gifts.has_previous %}
+                                    <li class="page-item">
+                                        <a class="page-link rounded-start-pill" href="?page={{ gifts.previous_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.price_range %}&price_range={{ request.GET.price_range }}{% endif %}{% if request.GET.recipient %}&recipient={{ request.GET.recipient }}{% endif %}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}{% if request.GET.sort %}&sort={{ request.GET.sort }}{% endif %}">
+                                            <i class="bi bi-chevron-left"></i>
+                                        </a>
+                                    </li>
+                                {% endif %}
+
+                                {% for num in gifts.paginator.page_range %}
+                                    {% if gifts.number == num %}
+                                        <li class="page-item active">
+                                            <span class="page-link">{{ num }}</span>
+                                        </li>
+                                    {% elif num > gifts.number|add:'-3' and num < gifts.number|add:'3' %}
+                                        <li class="page-item">
+                                            <a class="page-link" href="?page={{ num }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.price_range %}&price_range={{ request.GET.price_range }}{% endif %}{% if request.GET.recipient %}&recipient={{ request.GET.recipient }}{% endif %}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}{% if request.GET.sort %}&sort={{ request.GET.sort }}{% endif %}">
+                                                {{ num }}
+                                            </a>
+                                        </li>
+                                    {% endif %}
+                                {% endfor %}
+
+                                {% if gifts.has_next %}
+                                    <li class="page-item">
+                                        <a class="page-link rounded-end-pill" href="?page={{ gifts.next_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.price_range %}&price_range={{ request.GET.price_range }}{% endif %}{% if request.GET.recipient %}&recipient={{ request.GET.recipient }}{% endif %}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}{% if request.GET.sort %}&sort={{ request.GET.sort }}{% endif %}">
+                                            <i class="bi bi-chevron-right"></i>
+                                        </a>
+                                    </li>
+                                {% endif %}
+                            </ul>
+                        </nav>
+                    {% endif %}
+                {% else %}
+                    <div class="text-center py-5">
+                        <i class="bi bi-gift text-muted" style="font-size: 3rem;"></i>
+                        <p class="mt-3 mb-0 text-muted">No gift ideas found</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Add Gift Modal -->
+<div class="modal fade" id="addGiftModal" tabindex="-1" data-bs-backdrop="static">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Add Gift Idea</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="addGiftForm">
+                    <div class="mb-3">
+                        <label class="form-label">Title</label>
+                        <input type="text" name="title" class="form-control" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Description</label>
+                        <textarea name="description" class="form-control" rows="3"></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Price</label>
+                        <input type="number" name="price" class="form-control" step="0.01" min="0" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">URL</label>
+                        <input type="url" name="url" class="form-control">
+                    </div>
+                    <input type="hidden" name="image_url">
+                    <div class="mb-3">
+                        <label class="form-label">Recipients</label>
+                        <select class="form-select" name="recipients" multiple>
+                            {% for recipient in recipients %}
+                                <option value="{{ recipient.id }}">{{ recipient.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Tags</label>
+                        <select class="form-select" name="tags" multiple>
+                            {% for tag in tags %}
+                                <option value="{{ tag.id }}">{{ tag.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" id="submitGiftBtn">Add Gift</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% include 'includes/toast_notifications.html' with processing_message="Adding gift idea..." %}
+
+{% block extra_js %}
+<script src="{% static 'js/dashboard.js' %}"></script>
+{% endblock %}
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Quick add button */
+    #quickAddBtn {
+        border-radius: 50rem;
+    }
+
+    /* Form elements - specific to dashboard */
+    .form-control.search-input {
+        padding-left: 2.5rem;
+    }
+
+    .search-icon {
+        position: absolute;
+        left: 1rem;
+        top: 50%;
+        transform: translateY(-50%);
+    }
+
+    /* Gift grid specific styles */
+    .gift-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+        gap: 1.5rem;
+    }
+
+    .empty-img {
+        background: var(--hover-color);
+        position: relative;
+    }
+</style>
+{% endblock %}
+

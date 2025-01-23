@@ -1,0 +1,762 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en" class="h-100">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}GiftAdvisor{% endblock %}</title>
+    
+    <!-- Favicon -->
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎁</text></svg>">
+    
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.2/font/bootstrap-icons.min.css">
+    <style>
+        :root {
+            --primary-color: #FF4757;
+            --secondary-color: #2ED573;
+            --accent-color: #1E90FF;
+            --background-color: #F1F2F6;
+            --text-color: #2F3542;
+            --card-background: #FFFFFF;
+            --border-color: #E4E7EB;
+            --hover-color: #FFE9EB;
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            color: var(--text-color);
+            background-color: var(--background-color);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            min-width: 320px;
+        }
+
+        .navbar {
+            background-color: var(--card-background);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+            border-bottom: 1px solid rgba(0,0,0,.1);
+            padding: 0.5rem 1rem;
+            backdrop-filter: blur(10px);
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .navbar-brand {
+            color: var(--primary-color) !important;
+            font-weight: 600;
+            font-size: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .navbar-brand:hover {
+            color: #ff5252 !important;
+        }
+
+        .nav-link {
+            color: var(--text-color);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .nav-link:hover {
+            color: var(--primary-color);
+        }
+
+        .btn-primary {
+            background-color: var(--primary-color);
+            border-color: var(--primary-color);
+            font-weight: 500;
+            padding: 0.5rem 1rem;
+        }
+
+        .btn-primary:hover {
+            background-color: #FF3344;
+            border-color: #FF3344;
+        }
+
+        .btn-outline-primary {
+            color: var(--primary-color);
+            border-color: var(--primary-color);
+            font-weight: 500;
+        }
+
+        .btn-outline-primary:hover {
+            background-color: var(--hover-color);
+            color: var(--primary-color);
+            border-color: var(--primary-color);
+        }
+
+        /* Active state for outline buttons */
+        .btn-outline-primary.active {
+            background-color: var(--primary-color) !important;
+            color: white !important;
+            border-color: var(--primary-color) !important;
+        }
+
+        .btn-outline-primary.active:hover {
+            background-color: var(--primary-color) !important;
+            color: white !important;
+            border-color: var(--primary-color) !important;
+        }
+        
+        .shadow-custom {
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        main {
+            flex: 1 0 auto;
+            padding-top: 56px; /* Height of navbar */
+        }
+
+        footer {
+            background-color: rgba(255, 255, 255, 0.95);
+            border-top: 1px solid rgba(0,0,0,.1);
+            padding: 1rem 0;
+            font-size: 0.9rem;
+            backdrop-filter: blur(10px);
+            position: relative;
+            z-index: 1000;
+        }
+
+        footer a {
+            color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        footer a:hover {
+            color: #ff5252;
+            text-decoration: underline;
+        }
+
+        /* Clickable items */
+        .clickable {
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .clickable:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1) !important;
+        }
+
+        /* Badge styles */
+        .badge {
+            font-weight: 500;
+            padding: 0.5em 0.8em;
+        }
+
+        .badge.bg-primary {
+            background-color: var(--primary-color) !important;
+        }
+
+        /* Remove hover effects from badges inside clickable items */
+        .clickable .badge {
+            pointer-events: none;
+        }
+
+        /* Sidebar styles */
+        .sidebar {
+            width: 280px;
+            position: fixed;
+            top: calc(56px + 1rem);
+            left: calc((100% - 1320px) / 2);
+            padding: 1.5rem;
+            background: var(--card-background);
+            border-radius: 0.75rem;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            min-height: calc(100vh - 56px - 2rem);
+            max-height: calc(100vh - 56px - 2rem);
+            overflow-y: auto;
+            z-index: 900;
+        }
+
+        .sidebar h5 {
+            font-size: 0.875rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: #6c757d;
+            padding: 0 0.5rem;
+        }
+
+        .sidebar-link {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.875rem 1rem;
+            color: var(--text-color);
+            text-decoration: none;
+            border-radius: 0.75rem;
+            transition: all 0.2s ease;
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+        }
+
+        .sidebar-link i {
+            font-size: 1.25rem;
+            opacity: 0.8;
+        }
+
+        .sidebar-link:hover,
+        .sidebar-link.active {
+            background: var(--hover-color);
+            color: var(--primary-color);
+            transform: translateX(4px);
+        }
+
+        .sidebar-link:hover i,
+        .sidebar-link.active i {
+            opacity: 1;
+        }
+
+        /* Main content area */
+        .main-content {
+            margin-left: calc(280px + ((100% - 1320px) / 2));
+            padding: 1rem;
+            width: calc(1320px - 280px);
+            min-height: calc(100vh - 56px - 2rem);
+        }
+
+        @media (max-width: 1400px) {
+            .sidebar {
+                left: 1rem;
+            }
+            .main-content {
+                margin-left: calc(280px + 1rem);
+                width: calc(100% - 280px - 2rem);
+            }
+        }
+
+        @media (max-width: 992px) {
+            .sidebar {
+                left: 0;
+                width: 240px;
+            }
+            .main-content {
+                margin-left: 240px;
+                width: calc(100% - 240px);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 200px;
+            }
+            .main-content {
+                margin-left: 200px;
+                width: calc(100% - 200px);
+            }
+        }
+
+        /* Gift Grid */
+        .gift-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .gift-card {
+            background: var(--card-background);
+            border-radius: 0.75rem;
+            overflow: hidden;
+            border: 1px solid var(--border-color);
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+        }
+
+        .gift-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 24px rgba(0,0,0,0.15);
+        }
+
+        /* Gift List */
+        .gift-list .gift-item {
+            background: white;
+            border-radius: 0.75rem;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+            transition: all 0.2s ease-in-out;
+        }
+
+        .gift-list .gift-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 .5rem 1rem rgba(0,0,0,.15)!important;
+        }
+
+        .gift-list .gift-item .flex-grow-1 {
+            min-width: 0;
+        }
+
+        .gift-list .gift-item h5 {
+            margin-bottom: 0.25rem;
+            font-weight: 600;
+        }
+
+        .gift-list .gift-item .text-muted {
+            font-size: 0.9rem;
+        }
+
+        .gift-list .gift-item .badge {
+            font-size: 0.8rem;
+        }
+
+        /* Image placeholders */
+        .empty-img {
+            background: var(--hover-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--primary-color);
+            overflow: hidden;
+            position: relative;
+        }
+
+        .gift-card .empty-img {
+            height: 160px;
+        }
+
+        .gift-list .empty-img {
+            min-width: 100px;
+            width: 100px;
+            height: 100px;
+            border-radius: 0.5rem;
+            flex-shrink: 0;
+        }
+
+        .gift-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.3s ease;
+        }
+
+        .gift-card:hover .gift-image {
+            transform: scale(1.05);
+        }
+
+        .gift-list .gift-item:hover .gift-image {
+            transform: scale(1.1);
+        }
+
+        /* Filters */
+        .filters-section {
+            background: var(--card-background);
+            border: 1px solid var(--border-color);
+            border-radius: 1rem;
+            padding: 1.5rem;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        }
+
+        /* Ensure navbar stays visible */
+        .navbar .container {
+            min-width: 320px;
+        }
+
+        /* Form controls */
+        .form-select, .form-control {
+            border-color: var(--border-color);
+            padding: 0.625rem 1rem;
+        }
+
+        .form-select:focus, .form-control:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 0.2rem rgba(255, 71, 87, 0.25);
+        }
+
+        /* Modern Input Bar */
+        .input-section {
+            position: relative;
+        }
+
+        .modern-input-wrapper {
+            position: relative;
+            transition: all 0.3s ease;
+        }
+
+        .modern-input {
+            width: 100%;
+            padding: 1rem 1rem 1rem 3rem;
+            font-size: 1rem;
+            line-height: 1.5;
+            color: var(--text-color);
+            background-color: var(--card-background);
+            border: 2px solid var(--border-color);
+            border-radius: 1rem;
+            transition: all 0.3s ease;
+            height: 48px;  /* Match height with circular button */
+        }
+
+        .modern-input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 4px rgba(255, 71, 87, 0.1);
+        }
+
+        .input-icon {
+            position: absolute;
+            left: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 1.5rem;
+            color: var(--primary-color);
+            opacity: 0.8;
+            pointer-events: none;
+        }
+
+        .modern-button {
+            padding: 0.8rem 1.5rem;
+            font-size: 1rem;
+            border-radius: 0.75rem;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-weight: 600;
+        }
+
+        .modern-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(255, 71, 87, 0.25);
+        }
+
+        /* Remove browser's default URL styling */
+        .modern-input:-webkit-autofill,
+        .modern-input:-webkit-autofill:hover,
+        .modern-input:-webkit-autofill:focus {
+            -webkit-box-shadow: 0 0 0px 1000px var(--card-background) inset;
+            -webkit-text-fill-color: var(--text-color);
+            transition: background-color 5000s ease-in-out 0s;
+        }
+
+        .modern-input::placeholder {
+            color: #9CA3AF;
+            opacity: 0.8;
+        }
+
+        /* Quick Add Section */
+        .quick-add-section {
+            background: var(--card-background);
+            border: 1px solid var(--border-color);
+            border-radius: 1rem;
+            padding: 1.5rem;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        }
+
+        /* Circular Button */
+        .circular-button {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            padding: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            transition: all 0.3s ease;
+            flex-shrink: 0;
+        }
+
+        .circular-button:hover:not(:disabled) {
+            transform: translateY(-2px) rotate(90deg);
+            box-shadow: 0 4px 12px rgba(255, 71, 87, 0.25);
+        }
+
+        .circular-button:disabled {
+            background-color: #fcdfdf;
+            border-color: #FFE5E5; 
+            color: #f76565;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        /* Profile Page Styles */
+        .profile-header {
+            background: var(--bs-body-bg);
+            border-radius: 1rem;
+            padding: 2rem;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+
+        .profile-avatar {
+            width: 100px;
+            height: 100px;
+            background: var(--bs-gray-100);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .profile-avatar i {
+            font-size: 3rem;
+            color: var(--bs-gray-500);
+        }
+
+        /* Search Results Styles */
+        .search-container {
+            position: relative;
+        }
+
+        .search-results {
+            max-height: 60vh;
+            overflow-y: auto;
+            padding: 1rem;
+        }
+
+        .gift-search-item {
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .gift-search-item:hover {
+            transform: translateY(-2px);
+        }
+
+        /* Recipient Cards */
+        .recipient-card {
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .recipient-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+        }
+
+        .recipient-card .btn {
+            transition: opacity 0.2s ease;
+        }
+
+        .recipient-card:hover .btn-outline-primary {
+            opacity: 0.9;
+        }
+
+        /* Global button styles */
+        .btn {
+            border-radius: 50rem !important;  /* Make ALL buttons rounded */
+            transition: all 0.2s ease-in-out;
+            padding: 0.5rem 1rem;
+        }
+
+        .btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 .3rem .5rem rgba(0,0,0,.15);
+        }
+
+        /* Consistent shadow styles */
+        .shadow-sm {
+            box-shadow: 0 .2rem .3rem rgba(0,0,0,.08) !important;
+        }
+
+        .shadow {
+            box-shadow: 0 .3rem .5rem rgba(0,0,0,.1) !important;
+        }
+
+        .shadow-lg {
+            box-shadow: 0 .5rem 1rem rgba(0,0,0,.15) !important;
+        }
+
+        /* Hover shadow utilities */
+        .hover-shadow-sm {
+            transition: all 0.2s ease-in-out;
+        }
+
+        .hover-shadow-sm:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 .2rem .3rem rgba(0,0,0,.08) !important;
+        }
+
+        .hover-shadow {
+            transition: all 0.2s ease-in-out;
+        }
+
+        .hover-shadow:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 .3rem .5rem rgba(0,0,0,.1) !important;
+        }
+
+        .hover-shadow-lg {
+            transition: all 0.2s ease-in-out;
+        }
+
+        .hover-shadow-lg:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 .5rem 1rem rgba(0,0,0,.15) !important;
+        }
+
+        /* Main content alignment */
+        .main-content {
+            margin-left: calc(280px + ((100% - 1320px) / 2));
+            padding: 1rem;
+            width: calc(1320px - 280px);
+            min-height: calc(100vh - 56px - 2rem);
+        }
+
+        /* Card styles */
+        .card {
+            border: none;
+            border-radius: 1rem;
+            background: var(--card-background);
+        }
+
+        /* Container styles */
+        .container, .container-fluid {
+            padding-left: 1.5rem;
+            padding-right: 1.5rem;
+        }
+
+        /* Consistent spacing */
+        .section-spacing {
+            margin-bottom: 1.5rem;
+        }
+
+        .content-spacing {
+            padding: 1.5rem;
+        }
+
+        /* Search input group */
+        .search-group {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 0.75rem 1rem 0.75rem 3rem;
+            font-size: 1rem;
+            line-height: 1.5;
+            color: var(--text-color);
+            background-color: var(--card-background);
+            border: 2px solid var(--border-color);
+            border-radius: 50rem;
+            transition: all 0.2s ease-in-out;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 4px rgba(255, 71, 87, 0.1);
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 1.25rem;
+            color: var(--primary-color);
+            opacity: 0.8;
+            pointer-events: none;
+        }
+
+        .search-button {
+            position: absolute;
+            right: 0.25rem;
+            top: 50%;
+            transform: translateY(-50%);
+            padding: 0.5rem;
+            border-radius: 50%;
+            width: 38px;
+            height: 38px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: var(--primary-color);
+            border: none;
+            color: white;
+            transition: all 0.2s ease-in-out;
+        }
+
+        .search-button:hover {
+            transform: translateY(-50%) scale(1.05);
+            box-shadow: 0 4px 12px rgba(255, 71, 87, 0.25);
+        }
+
+        .search-input-wrapper {
+            position: relative;
+            width: 100%;
+        }
+    </style>
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg shadow-sm">
+        <div class="container">
+            <a class="navbar-brand" href="{% url 'index' %}">
+                🎁 GiftAdvisor
+            </a>
+            <div class="ms-auto d-flex align-items-center gap-3">
+                {% if user.is_authenticated %}
+                    {% load socialaccount %}
+                    {% get_social_accounts user as accounts %}
+                    <a href="#" class="nav-link">
+                        {% with google_account=accounts.google.0 %}
+                            {% if google_account.extra_data.picture %}
+                                <img src="{{ google_account.extra_data.picture }}" 
+                                     alt="Profile" 
+                                     class="rounded-circle me-0"
+                                     width="24" 
+                                     height="24">
+                            {% else %}
+                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-person-circle" viewBox="0 0 16 16">
+                                    <path d="M11 6a3 3 0 1 1-6 0 3 3 0 0 1 6 0"/>
+                                    <path fill-rule="evenodd" d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8m8-7a7 7 0 0 0-5.468 11.37C3.242 11.226 4.805 10 8 10s4.757 1.225 5.468 2.37A7 7 0 0 0 8 1"/>
+                                </svg>
+                            {% endif %}
+                            {% if google_account.extra_data.name %}
+                                {{ google_account.extra_data.name }}
+                            {% else %}
+                                {{ user.email }}
+                            {% endif %}
+                        {% endwith %}
+                    </a>
+                    <form method="post" action="{% url 'account_logout' %}" class="m-0">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-outline-primary btn-sm">
+                            Logout
+                        </button>
+                    </form>
+                {% else %}
+                    {% load socialaccount %}
+                    <a href="{% provider_login_url 'google' %}" class="btn btn-outline-dark btn-sm d-flex align-items-center gap-2">
+                        <svg width="18" height="18" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48">
+                            <path fill="#FFC107" d="M43.611 20.083H42V20H24v8h11.303c-1.649 4.657-6.08 8-11.303 8-6.627 0-12-5.373-12-12s5.373-12 12-12c3.059 0 5.842 1.154 7.961 3.039l5.657-5.657C34.046 6.053 29.268 4 24 4 12.955 4 4 12.955 4 24s8.955 20 20 20 20-8.955 20-20c0-1.341-.138-2.65-.389-3.917z"/>
+                            <path fill="#FF3D00" d="m6.306 14.691 6.571 4.819C14.655 15.108 18.961 12 24 12c3.059 0 5.842 1.154 7.961 3.039l5.657-5.657C34.046 6.053 29.268 4 24 4 16.318 4 9.656 8.337 6.306 14.691z"/>
+                            <path fill="#4CAF50" d="M24 44c5.166 0 9.86-1.977 13.409-5.192l-6.19-5.238A11.91 11.91 0 0 1 24 36c-5.202 0-9.619-3.317-11.283-7.946l-6.522 5.025C9.505 39.556 16.227 44 24 44z"/>
+                            <path fill="#1976D2" d="M43.611 20.083H42V20H24v8h11.303a12.04 12.04 0 0 1-4.087 5.571l.003-.002 6.19 5.238C36.971 39.205 44 34 44 24c0-1.341-.138-2.65-.389-3.917z"/>
+                        </svg>
+                        Sign in with Google
+                    </a>
+                {% endif %}
+            </div>
+        </div>
+    </nav>
+
+    <main>
+        {% block content %}
+        {% endblock %}
+    </main>
+
+    <footer class="mt-auto">
+        <div class="container text-center">
+            <p class="mb-0">
+                © {% now "Y" %} GiftAdvisor. All rights reserved.
+            </p>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

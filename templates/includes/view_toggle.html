@@ -1,0 +1,83 @@
+<!-- View Toggle Buttons -->
+<div class="btn-group shadow-sm" role="group">
+    <button type="button" class="btn btn-layout" id="gridViewBtn">
+        <i class="bi bi-grid"></i>
+    </button>
+    <button type="button" class="btn btn-layout" id="listViewBtn">
+        <i class="bi bi-list-ul"></i>
+    </button>
+</div>
+
+<style>
+    /* Layout buttons */
+    .btn-layout {
+        border: none;
+        padding: 0.5rem 1rem;
+        background: none;
+        color: var(--bs-secondary);
+        transition: all 0.2s ease-in-out;
+    }
+
+    .btn-layout:hover {
+        background-color: var(--bs-primary-bg-subtle);
+        transform: translateY(-1px);
+    }
+
+    .btn-layout.active {
+        color: var(--bs-primary);
+        background-color: var(--bs-primary-bg-subtle);
+        box-shadow: 0 .2rem .3rem rgba(0,0,0,.1);
+    }
+
+    .btn-group {
+        background: white;
+        border-radius: 50rem;
+        padding: 0.25rem;
+    }
+
+    .btn-group .btn-layout:first-child {
+        border-top-left-radius: 50rem;
+        border-bottom-left-radius: 50rem;
+    }
+
+    .btn-group .btn-layout:last-child {
+        border-top-right-radius: 50rem;
+        border-bottom-right-radius: 50rem;
+    }
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const gridViewBtn = document.getElementById('gridViewBtn');
+    const listViewBtn = document.getElementById('listViewBtn');
+    const gridView = document.getElementById('{{ grid_view_id|default:"gridView" }}');
+    const listView = document.getElementById('{{ list_view_id|default:"listView" }}');
+
+    // Set initial view based on localStorage or default to grid
+    const currentView = localStorage.getItem('{{ view_storage_key|default:"currentView" }}') || 'grid';
+    if (currentView === 'grid') {
+        gridViewBtn.classList.add('active');
+        listView?.classList.add('d-none');
+    } else {
+        listViewBtn.classList.add('active');
+        gridView?.classList.add('d-none');
+    }
+
+    // Toggle view handlers
+    gridViewBtn.addEventListener('click', () => {
+        gridView?.classList.remove('d-none');
+        listView?.classList.add('d-none');
+        gridViewBtn.classList.add('active');
+        listViewBtn.classList.remove('active');
+        localStorage.setItem('{{ view_storage_key|default:"currentView" }}', 'grid');
+    });
+
+    listViewBtn.addEventListener('click', () => {
+        listView?.classList.remove('d-none');
+        gridView?.classList.add('d-none');
+        listViewBtn.classList.add('active');
+        gridViewBtn.classList.remove('active');
+        localStorage.setItem('{{ view_storage_key|default:"currentView" }}', 'list');
+    });
+});
+</script>
