@@ -352,11 +352,6 @@ class RecipientProfileView(LoginRequiredMixin, TemplateView):
         recipient.notes = request.POST.get('notes', '')
         recipient.save()
         
-        # Handle interests
-        if 'interests' in request.POST:
-            interests = request.POST.getlist('interests')
-            recipient.interests.set(interests)
-        
         messages.success(request, f"{recipient.name}'s details have been updated successfully.")
         return redirect('recipient_profile', recipient_id=recipient_id)
     

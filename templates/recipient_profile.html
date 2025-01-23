@@ -331,7 +331,7 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">
-                <form method="POST" action="{% url 'recipient_profile' recipient.id %}">
+                <form method="POST" action="{% url 'recipient_profile' recipient.id %}" id="editRecipientForm">
                     {% csrf_token %}
                     <div class="mb-3">
                         <label class="form-label">Name</label>
@@ -353,13 +353,33 @@
                     </div>
                     <div class="mb-3">
                         <label class="form-label">Interests</label>
-                        <select name="interests" class="form-select" multiple>
-                            {% for tag in tags %}
-                                <option value="{{ tag.id }}" {% if tag in recipient.interests.all %}selected{% endif %}>
-                                    {{ tag.name }}
-                                </option>
-                            {% endfor %}
-                        </select>
+                        <div class="interests-container">
+                            <div id="selectedInterests" class="d-flex gap-2 mb-2 flex-wrap">
+                                {% for interest in recipient.interests.all %}
+                                    <span class="badge rounded-pill bg-primary d-flex align-items-center gap-1">
+                                        {{ interest.name }}
+                                        <button type="button" class="btn-close btn-close-white btn-sm" style="font-size: 0.5rem;"
+                                                onclick="removeInterest('{% url 'remove_recipient_interest' recipient.id interest.id %}')"></button>
+                                    </span>
+                                {% endfor %}
+                            </div>
+                            <div class="position-relative">
+                                <div class="d-flex gap-2">
+                                    <input type="text" 
+                                           id="interestInput" 
+                                           class="form-control" 
+                                           placeholder="Type an interest..."
+                                           autocomplete="off"
+                                           spellcheck="false">
+                                    <button type="button" class="btn btn-primary" onclick="addInterest('{% url 'add_recipient_interest' recipient.id %}')">
+                                        <i class="bi bi-plus-lg"></i>
+                                    </button>
+                                </div>
+                                <div id="tagSuggestions" class="tag-suggestions d-none">
+                                    <!-- Tag suggestions will be populated here -->
+                                </div>
+                            </div>
+                        </div>
                     </div>
                     <div class="mb-3">
                         <label class="form-label">Notes</label>
@@ -428,91 +448,132 @@
 
 {% block extra_js %}
 <script>
-    // Initialize available tags for suggestions
-    const allTags = {{ tags|safe }};
-    
-    // Elements
-    const interestInput = document.getElementById('interestInput');
-    const tagSuggestions = document.getElementById('tagSuggestions');
-    let selectedIndex = -1;
-    
-    // Show tag suggestions as user types
-    interestInput.addEventListener('input', () => {
-        const query = interestInput.value.toLowerCase().trim();
-        if (query.length === 0) {
-            tagSuggestions.classList.add('d-none');
-            return;
-        }
+    document.addEventListener('DOMContentLoaded', function() {
+        // Elements
+        const interestInput = document.getElementById('interestInput');
+        const tagSuggestions = document.getElementById('tagSuggestions');
+        let selectedIndex = -1;
         
-        // Filter matching tags
-        const matches = allTags
-            .filter(tag => tag.name.toLowerCase().includes(query))
-            .slice(0, 5); // Limit to 5 suggestions
-        
-        if (matches.length > 0) {
-            // Populate suggestions
-            tagSuggestions.innerHTML = matches
-                .map((tag, index) => `
-                    <div class="tag-suggestion" data-index="${index}" data-id="${tag.id}" data-name="${tag.name}">
-                        ${tag.name}
-                    </div>
-                `).join('');
+        // Show tag suggestions as user types
+        interestInput.addEventListener('input', () => {
+            const query = interestInput.value.toLowerCase().trim();
+            if (query.length === 0) {
+                tagSuggestions.classList.add('d-none');
+                return;
+            }
             
-            // Add click handlers to suggestions
-            tagSuggestions.querySelectorAll('.tag-suggestion').forEach(suggestion => {
-                suggestion.addEventListener('click', () => {
-                    interestInput.value = suggestion.dataset.name;
-                    tagSuggestions.classList.add('d-none');
-                    interestInput.form.submit();
+            // Filter matching tags
+            const matches = Array.from(document.querySelectorAll('#selectedInterests .badge'))
+                .map(badge => badge.textContent.trim())
+                .filter(tag => tag.toLowerCase().includes(query))
+                .slice(0, 5); // Limit to 5 suggestions
+            
+            if (matches.length > 0) {
+                // Populate suggestions
+                tagSuggestions.innerHTML = matches
+                    .map((tag, index) => `
+                        <div class="tag-suggestion" data-index="${index}" data-name="${tag}">
+                            ${tag}
+                        </div>
+                    `).join('');
+                
+                // Add click handlers to suggestions
+                tagSuggestions.querySelectorAll('.tag-suggestion').forEach(suggestion => {
+                    suggestion.addEventListener('click', () => {
+                        interestInput.value = suggestion.dataset.name;
+                        tagSuggestions.classList.add('d-none');
+                        addInterest('{% url 'add_recipient_interest' recipient.id %}');
+                    });
                 });
-            });
-            
-            tagSuggestions.classList.remove('d-none');
-            selectedIndex = -1;
-        } else {
-            tagSuggestions.classList.add('d-none');
-        }
-    });
-    
-    // Handle keyboard navigation
-    interestInput.addEventListener('keydown', (e) => {
-        const suggestions = tagSuggestions.querySelectorAll('.tag-suggestion');
-        if (suggestions.length === 0) return;
-        
-        if (e.key === 'ArrowDown') {
-            e.preventDefault();
-            selectedIndex = Math.min(selectedIndex + 1, suggestions.length - 1);
-            updateSelection(suggestions);
-        } else if (e.key === 'ArrowUp') {
-            e.preventDefault();
-            selectedIndex = Math.max(selectedIndex - 1, -1);
-            updateSelection(suggestions);
-        } else if (e.key === 'Enter' && selectedIndex >= 0) {
-            e.preventDefault();
-            const selected = suggestions[selectedIndex];
-            interestInput.value = selected.dataset.name;
-            tagSuggestions.classList.add('d-none');
-            interestInput.form.submit();
-        }
-    });
-    
-    // Update the selected suggestion
-    function updateSelection(suggestions) {
-        suggestions.forEach((suggestion, index) => {
-            suggestion.classList.toggle('selected', index === selectedIndex);
-            if (index === selectedIndex) {
-                suggestion.scrollIntoView({ block: 'nearest' });
+                
+                tagSuggestions.classList.remove('d-none');
+                selectedIndex = -1;
+            } else {
+                tagSuggestions.classList.add('d-none');
             }
         });
-    }
-    
-    // Hide suggestions when clicking outside
-    document.addEventListener('click', (e) => {
-        if (!interestInput.contains(e.target) && !tagSuggestions.contains(e.target)) {
-            tagSuggestions.classList.add('d-none');
+        
+        // Handle keyboard navigation
+        interestInput.addEventListener('keydown', (e) => {
+            const suggestions = tagSuggestions.querySelectorAll('.tag-suggestion');
+            if (suggestions.length === 0) return;
+            
+            if (e.key === 'ArrowDown') {
+                e.preventDefault();
+                selectedIndex = Math.min(selectedIndex + 1, suggestions.length - 1);
+                updateSelection(suggestions);
+            } else if (e.key === 'ArrowUp') {
+                e.preventDefault();
+                selectedIndex = Math.max(selectedIndex - 1, -1);
+                updateSelection(suggestions);
+            } else if (e.key === 'Enter' && selectedIndex >= 0) {
+                e.preventDefault();
+                const selected = suggestions[selectedIndex];
+                interestInput.value = selected.dataset.name;
+                tagSuggestions.classList.add('d-none');
+                addInterest('{% url 'add_recipient_interest' recipient.id %}');
+            }
+        });
+        
+        // Update visual selection
+        function updateSelection(suggestions) {
+            suggestions.forEach((suggestion, index) => {
+                if (index === selectedIndex) {
+                    suggestion.classList.add('selected');
+                    suggestion.scrollIntoView({ block: 'nearest' });
+                } else {
+                    suggestion.classList.remove('selected');
+                }
+            });
         }
+        
+        // Hide suggestions when clicking outside
+        document.addEventListener('click', (e) => {
+            if (!interestInput.contains(e.target) && !tagSuggestions.contains(e.target)) {
+                tagSuggestions.classList.add('d-none');
+            }
+        });
     });
+
+    // Handle adding interests via AJAX
+    async function addInterest(url) {
+        const interest = document.getElementById('interestInput').value.trim();
+        if (!interest) return;
+
+        const formData = new FormData();
+        formData.append('interest', interest);
+        formData.append('csrfmiddlewaretoken', document.querySelector('[name=csrfmiddlewaretoken]').value);
+
+        try {
+            const response = await fetch(url, {
+                method: 'POST',
+                body: formData
+            });
+            if (response.ok) {
+                window.location.reload();
+            }
+        } catch (error) {
+            console.error('Error adding interest:', error);
+        }
+    }
+
+    // Handle removing interests via AJAX
+    async function removeInterest(url) {
+        const formData = new FormData();
+        formData.append('csrfmiddlewaretoken', document.querySelector('[name=csrfmiddlewaretoken]').value);
+
+        try {
+            const response = await fetch(url, {
+                method: 'POST',
+                body: formData
+            });
+            if (response.ok) {
+                window.location.reload();
+            }
+        } catch (error) {
+            console.error('Error removing interest:', error);
+        }
+    }
 </script>
-<script src="{% static 'js/recipient_profile.js' %}"></script>
 {% endblock %}
 {% endblock %} 
