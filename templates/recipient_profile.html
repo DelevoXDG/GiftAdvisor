@@ -12,10 +12,6 @@
         border-radius: 0.75rem;
     }
 
-    .badge {
-        border-radius: 50rem;
-    }
-
     /* Action buttons styling */
     .action-btn {
         box-shadow: 0 .2rem .3rem rgba(0,0,0,.1);
@@ -121,7 +117,7 @@
                             <i class="bi bi-person-circle text-muted" style="font-size: 2.5rem;"></i>
                             <div>
                                 <h2 class="fw-bold mb-1" style="font-size: 1.75rem;">{{ recipient.name }}</h2>
-                                <span class="badge bg-primary">{{ recipient.get_relationship_display }}</span>
+                                <span class="badge rounded-pill bg-primary">{{ recipient.get_relationship_display }}</span>
                             </div>
                         </div>
                         <button class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#editRecipientModal">
@@ -144,7 +140,7 @@
                                     <h6 class="fw-bold mb-2" style="font-size: 0.9rem;">Interests</h6>
                                     <div class="d-flex flex-wrap gap-2">
                                         {% for interest in recipient.interests.all %}
-                                            <span class="badge bg-secondary" style="font-size: 0.8rem;">{{ interest.name }}</span>
+                                            <span class="badge rounded-pill bg-secondary" style="font-size: 0.8rem;">{{ interest.name }}</span>
                                         {% endfor %}
                                     </div>
                                 </div>
@@ -362,7 +358,7 @@
                                 {% for interest in recipient.interests.all %}
                                     <form method="POST" action="{% url 'remove_recipient_interest' recipient.id interest.id %}" style="display: contents;">
                                         {% csrf_token %}
-                                        <span class="badge bg-primary d-flex align-items-center gap-1">
+                                        <span class="badge rounded-pill bg-primary d-flex align-items-center gap-1">
                                             {{ interest.name }}
                                             <button type="submit" class="btn-close btn-close-white btn-sm" style="font-size: 0.5rem;"></button>
                                         </span>
