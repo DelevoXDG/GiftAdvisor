@@ -21,6 +21,7 @@ class Dashboard {
         this.isSubmitting = false;
         this.isExtracting = false;
         this.currentExtraction = null;
+        this.currentAIModel = document.body.dataset.aiModel;
         
         this.initializeEventListeners();
         this.restoreLayoutPreference();
@@ -70,9 +71,12 @@ class Dashboard {
         }
         this.isSubmitting = true;
         
-        // Show processing message
+        // Show appropriate message based on AI model
         const toast = bootstrap.Toast.getOrCreateInstance(document.getElementById('processingToast'));
-        toast.show();
+        if (this.currentAIModel !== 'none') {
+            document.getElementById('processingToastMessage').textContent = "Processing gift idea with AI...";
+            toast.show();
+        }
         
         const formData = {
             title: this.addGiftForm.querySelector('[name="title"]').value,
@@ -98,8 +102,24 @@ class Dashboard {
             
             if (response.ok) {
                 this.bsModal.hide();
-                // Messages will be shown on page reload
-                window.location.reload();
+                // Show success message
+                const successToast = document.createElement('div');
+                successToast.className = 'toast';
+                successToast.innerHTML = `
+                    <div class="toast-header bg-success text-white">
+                        <i class="bi bi-check-circle me-2"></i>
+                        <strong class="me-auto">Success</strong>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast"></button>
+                    </div>
+                    <div class="toast-body">
+                        Gift idea added successfully
+                    </div>
+                `;
+                document.querySelector('.toast-container').appendChild(successToast);
+                new bootstrap.Toast(successToast).show();
+                
+                // Refresh the page after a short delay
+                setTimeout(() => window.location.reload(), 1000);
             } else {
                 // Show error message
                 const errorToast = bootstrap.Toast.getOrCreateInstance(document.getElementById('errorToast'));
@@ -128,9 +148,12 @@ class Dashboard {
         this.quickAddInput.disabled = true;
         this.quickAddButton.disabled = true;
         
-        // Show processing toast
+        // Show appropriate message based on AI model
         const processingToast = bootstrap.Toast.getOrCreateInstance(document.getElementById('processingToast'));
-        processingToast.show();
+        if (this.currentAIModel !== 'none') {
+            document.getElementById('processingToastMessage').textContent = "Processing gift idea with AI...";
+            processingToast.show();
+        }
         
         try {
             const response = await fetch('/api/extract-metadata/', {

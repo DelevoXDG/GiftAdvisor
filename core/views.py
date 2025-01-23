@@ -28,6 +28,13 @@ class IndexView(TemplateView):
         context = super().get_context_data(**kwargs)
         
         if self.request.user.is_authenticated:
+            # Get user preferences
+            try:
+                preferences = UserPreferences.objects.get(user=self.request.user)
+                context['current_ai_model'] = preferences.current_ai_model
+            except UserPreferences.DoesNotExist:
+                context['current_ai_model'] = 'none'
+            
             # Get test user if current user has no gifts
             user = self.request.user
             gifts = GiftIdea.objects.filter(user=user)
