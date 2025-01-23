@@ -34,7 +34,6 @@ class RecipientProfile {
                 .map(badge => badge.textContent.trim())
         );
         
-        // Initialize event listeners
         this.initializeEventListeners();
         this.restoreLayoutPreference();
     }

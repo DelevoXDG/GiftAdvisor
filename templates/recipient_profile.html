@@ -50,7 +50,7 @@
         left: 0;
         right: 0;
         background: white;
-        border: 1px solid var(--bs-gray-300);
+        border: 1px solid var(--border-color);
         border-radius: 0.75rem;
         box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         max-height: 200px;
@@ -66,11 +66,12 @@
 
     .tag-suggestion:hover,
     .tag-suggestion.selected {
-        background-color: var(--bs-gray-100);
+        background-color: var(--hover-color);
+        color: var(--primary-color);
     }
 
     .tag-suggestion + .tag-suggestion {
-        border-top: 1px solid var(--bs-gray-200);
+        border-top: 1px solid var(--border-color);
     }
 </style>
 {% endblock %}
@@ -306,7 +307,8 @@
                                            name="interest" 
                                            class="form-control" 
                                            placeholder="Type an interest..."
-                                           autocomplete="off">
+                                           autocomplete="off"
+                                           spellcheck="false">
                                     <button type="submit" class="btn btn-primary">
                                         <i class="bi bi-plus-lg"></i>
                                     </button>
@@ -363,8 +365,7 @@
 {% block extra_js %}
 <script>
     // Initialize available tags for suggestions
-    const allTags = JSON.parse('{{ tags|escapejs|safe }}');
-    console.log('Available tags:', allTags);
+    const allTags = {{ tags|safe }};
     
     // Elements
     const interestInput = document.getElementById('interestInput');
@@ -388,7 +389,7 @@
             // Populate suggestions
             tagSuggestions.innerHTML = matches
                 .map((tag, index) => `
-                    <div class="tag-suggestion" data-index="${index}" data-name="${tag.name}">
+                    <div class="tag-suggestion" data-index="${index}" data-id="${tag.id}" data-name="${tag.name}">
                         ${tag.name}
                     </div>
                 `).join('');
