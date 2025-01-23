@@ -22,6 +22,19 @@ class RecipientProfile {
         this.searchTimeout = null;
         this.recipientId = window.location.pathname.split('/').filter(Boolean).pop();
         
+        // Interests elements
+        this.interestInput = document.getElementById('interestInput');
+        this.addInterestBtn = document.getElementById('addInterestBtn');
+        this.selectedInterests = document.getElementById('selectedInterests');
+        this.interestsInput = document.getElementById('interestsInput');
+        
+        // Initialize interests
+        this.interests = new Set(
+            Array.from(this.selectedInterests.querySelectorAll('.badge'))
+                .map(badge => badge.textContent.trim())
+        );
+        
+        // Initialize event listeners
         this.initializeEventListeners();
         this.restoreLayoutPreference();
     }
@@ -39,6 +52,23 @@ class RecipientProfile {
         // View toggling
         this.gridViewBtn.addEventListener('click', () => this.toggleView('grid'));
         this.listViewBtn.addEventListener('click', () => this.toggleView('list'));
+        
+        // Add event listeners for interests
+        if (this.interestInput) {
+            this.interestInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    this.addInterest();
+                }
+            });
+        }
+        
+        if (this.addInterestBtn) {
+            this.addInterestBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                this.addInterest();
+            });
+        }
     }
 
     restoreLayoutPreference() {
@@ -193,9 +223,47 @@ class RecipientProfile {
             localStorage.setItem('giftLayoutPreference', type);
         }
     }
+
+    addInterest() {
+        const interest = this.interestInput.value.trim();
+        if (!interest) return;
+        
+        if (!this.interests.has(interest)) {
+            this.interests.add(interest);
+            
+            const badge = document.createElement('span');
+            badge.className = 'badge bg-primary d-flex align-items-center gap-1';
+            badge.innerHTML = `
+                ${interest}
+                <button type="button" class="btn-close btn-close-white btn-sm" 
+                        onclick="recipientProfile.removeInterest(null, '${interest}')"
+                        style="font-size: 0.5rem;"></button>
+            `;
+            
+            this.selectedInterests.appendChild(badge);
+            this.updateInterestsInput();
+        }
+        
+        this.interestInput.value = '';
+    }
+    
+    removeInterest(id, name) {
+        this.interests.delete(name);
+        const badge = Array.from(this.selectedInterests.children)
+            .find(el => el.textContent.trim() === name);
+        if (badge) {
+            badge.remove();
+            this.updateInterestsInput();
+        }
+    }
+    
+    updateInterestsInput() {
+        this.interestsInput.value = Array.from(this.interests).join(',');
+    }
 }
 
 // Initialize when DOM is loaded
+let recipientProfile;
 document.addEventListener('DOMContentLoaded', () => {
-    new RecipientProfile();
+    recipientProfile = new RecipientProfile();
 }); 

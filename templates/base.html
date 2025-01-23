@@ -284,6 +284,29 @@
             display: flex;
             align-items: center;
             gap: 1.5rem;
+            transition: all 0.2s ease-in-out;
+        }
+
+        .gift-list .gift-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 .5rem 1rem rgba(0,0,0,.15)!important;
+        }
+
+        .gift-list .gift-item .flex-grow-1 {
+            min-width: 0;
+        }
+
+        .gift-list .gift-item h5 {
+            margin-bottom: 0.25rem;
+            font-weight: 600;
+        }
+
+        .gift-list .gift-item .text-muted {
+            font-size: 0.9rem;
+        }
+
+        .gift-list .gift-item .badge {
+            font-size: 0.8rem;
         }
 
         /* Image placeholders */

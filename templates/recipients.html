@@ -121,29 +121,27 @@
                                     <div class="gift-item rounded-4 shadow clickable" style="transition: transform 0.15s ease-in-out, box-shadow 0.15s ease-in-out;">
                                         <div class="d-flex align-items-center gap-3">
                                             <i class="bi bi-person-circle text-muted" style="font-size: 2rem;"></i>
-                                            <div class="flex-grow-1">
-                                                <div class="d-flex justify-content-between align-items-start">
-                                                    <div>
-                                                        <h5 class="mb-1">{{ recipient.name }}</h5>
-                                                        {% if recipient.notes %}
-                                                            <p class="text-muted mb-0">{{ recipient.notes|truncatechars:60 }}</p>
-                                                        {% endif %}
-                                                    </div>
-                                                    <div class="d-flex flex-column align-items-end">
-                                                        <span class="badge bg-primary ms-3">{{ recipient.get_relationship_display }}</span>
-                                                        <small class="text-primary mt-2">{{ recipient.gift_ideas.count }} gifts</small>
-                                                    </div>
+                                            <div class="flex-grow-1 d-flex justify-content-between align-items-start">
+                                                <div>
+                                                    <h5 class="mb-1">{{ recipient.name }}</h5>
+                                                    {% if recipient.notes %}
+                                                        <p class="text-muted mb-0">{{ recipient.notes|truncatechars:60 }}</p>
+                                                    {% endif %}
+                                                    {% if recipient.interests.all %}
+                                                        <div class="mt-2">
+                                                            {% for interest in recipient.interests.all|slice:":3" %}
+                                                                <span class="badge bg-secondary me-1">{{ interest.name }}</span>
+                                                            {% endfor %}
+                                                            {% if recipient.interests.count > 3 %}
+                                                                <span class="badge bg-secondary">+{{ recipient.interests.count|add:"-3" }}</span>
+                                                            {% endif %}
+                                                        </div>
+                                                    {% endif %}
                                                 </div>
-                                                {% if recipient.interests.all %}
-                                                    <div class="mt-2">
-                                                        {% for interest in recipient.interests.all|slice:":3" %}
-                                                            <span class="badge bg-secondary me-1">{{ interest.name }}</span>
-                                                        {% endfor %}
-                                                        {% if recipient.interests.count > 3 %}
-                                                            <span class="badge bg-secondary">+{{ recipient.interests.count|add:"-3" }}</span>
-                                                        {% endif %}
-                                                    </div>
-                                                {% endif %}
+                                                <div class="d-flex flex-column align-items-end ms-3">
+                                                    <span class="badge bg-primary">{{ recipient.get_relationship_display }}</span>
+                                                    <small class="text-primary mt-2">{{ recipient.gift_ideas.count }} gifts</small>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>

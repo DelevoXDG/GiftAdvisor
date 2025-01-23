@@ -43,7 +43,9 @@ from core.views import (
     update_purchase_feedback,
     delete_purchase,
     delete_gift,
-    delete_recipient
+    delete_recipient,
+    add_recipient_interest,
+    remove_recipient_interest
 )
 
 urlpatterns = [
@@ -71,6 +73,8 @@ urlpatterns = [
     path('api/recipients/<int:recipient_id>/', recipient_detail, name='recipient_detail'),
     path('api/recipients/<int:recipient_id>/delete/', delete_recipient, name='delete_recipient'),
     path('api/recipients/<int:recipient_id>/gifts/', add_gift_to_recipient, name='add_gift_to_recipient'),
+    path('api/recipients/<int:recipient_id>/interests/add/', add_recipient_interest, name='add_recipient_interest'),
+    path('api/recipients/<int:recipient_id>/interests/<int:interest_id>/remove/', remove_recipient_interest, name='remove_recipient_interest'),
     path('api/preferences/openai-key/', update_openai_key, name='update_openai_key'),
     path('api/preferences/deepseek-key/', update_deepseek_key, name='update_deepseek_key'),
     path('api/preferences/current-model/', update_current_model, name='update_current_model'),

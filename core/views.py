@@ -166,7 +166,7 @@ def recipients_list(request):
         except Exception as e:
             return JsonResponse({'error': str(e)}, status=400)
 
-@require_http_methods(["GET", "PUT", "DELETE"])
+@require_http_methods(["GET", "PUT"])
 def recipient_detail(request, recipient_id):
     """Handle individual recipient operations."""
     recipient = get_object_or_404(Recipient, id=recipient_id, user=request.user)
@@ -177,8 +177,8 @@ def recipient_detail(request, recipient_id):
             'name': recipient.name,
             'relationship': recipient.relationship,
             'birth_date': recipient.birth_date.isoformat() if recipient.birth_date else None,
-            'interests': list(recipient.interests.values_list('id', flat=True)),
-            'notes': recipient.notes
+            'notes': recipient.notes,
+            'interests': list(recipient.interests.values('id', 'name'))
         })
     
     elif request.method == "PUT":
@@ -191,15 +191,26 @@ def recipient_detail(request, recipient_id):
             recipient.notes = data.get('notes', '')
             recipient.save()
             
+            # Handle interests
             if 'interests' in data:
-                recipient.interests.set(data['interests'])
+                interest_names = [name.strip() for name in data['interests'].split(',') if name.strip()]
+                interests = []
+                for name in interest_names:
+                    interest, _ = Tag.objects.get_or_create(name=name)
+                    interests.append(interest)
+                recipient.interests.set(interests)
             
             return JsonResponse({'message': 'Recipient updated successfully'})
             
         except Exception as e:
             return JsonResponse({'error': str(e)}, status=400)
+
+@require_http_methods(["DELETE"])
+def recipient_detail(request, recipient_id):
+    """Handle individual recipient operations."""
+    recipient = get_object_or_404(Recipient, id=recipient_id, user=request.user)
     
-    elif request.method == "DELETE":
+    if request.method == "DELETE":
         try:
             recipient.delete()
             return JsonResponse({'message': 'Recipient deleted successfully'})
@@ -315,7 +326,7 @@ class RecipientProfileView(LoginRequiredMixin, TemplateView):
         context.update({
             'recipient': recipient,
             'gifts': recipient.gift_ideas.all().order_by('-created_at'),
-            'tags': Tag.objects.all().order_by('name'),
+            'tags': [{'id': tag.id, 'name': tag.name} for tag in Tag.objects.all().order_by('name')],
             'relationship_choices': Recipient.RELATIONSHIP_CHOICES,
         })
         
@@ -831,3 +842,34 @@ def delete_recipient(request, recipient_id):
     recipient.delete()
     messages.success(request, 'Recipient deleted successfully!')
     return redirect('recipients')
+
+@login_required
+def add_recipient_interest(request, recipient_id):
+    """Add an interest to a recipient."""
+    if request.method != 'POST':
+        return redirect('recipient_profile', recipient_id=recipient_id)
+        
+    recipient = get_object_or_404(Recipient, id=recipient_id, user=request.user)
+    interest_name = request.POST.get('interest', '').strip()
+    
+    if interest_name:
+        # Get or create the interest tag
+        interest, _ = Tag.objects.get_or_create(name=interest_name)
+        recipient.interests.add(interest)
+        messages.success(request, f'Added interest: {interest_name}')
+    
+    return redirect('recipient_profile', recipient_id=recipient_id)
+
+@login_required
+def remove_recipient_interest(request, recipient_id, interest_id):
+    """Remove an interest from a recipient."""
+    if request.method != 'POST':
+        return redirect('recipient_profile', recipient_id=recipient_id)
+        
+    recipient = get_object_or_404(Recipient, id=recipient_id, user=request.user)
+    interest = get_object_or_404(Tag, id=interest_id)
+    
+    recipient.interests.remove(interest)
+    messages.success(request, f'Removed interest: {interest.name}')
+    
+    return redirect('recipient_profile', recipient_id=recipient_id)

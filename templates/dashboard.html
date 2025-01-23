@@ -152,7 +152,7 @@
 
                 <!-- Gift List/Grid -->
                 {% if gifts %}
-                    <div id="giftList" class="gift-list" style="display: none;">
+                    <div id="giftList" class="gift-list d-none">
                         {% for gift in gifts %}
                             <a href="{% url 'gift_detail' gift.id %}" class="text-decoration-none">
                                 <div class="gift-item shadow-sm hover-shadow-md">
